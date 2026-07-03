@@ -1,0 +1,188 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useRef } from 'react';
+import { Upload, Trash2, FileText, ExternalLink, Loader2, Paperclip, AlertCircle } from 'lucide-react';
+import { uploadFileToDrive } from '../lib/googleSheets';
+
+export interface AttachedFile {
+  name: string;
+  url: string;
+}
+
+interface FileUploaderProps {
+  label?: string;
+  files: AttachedFile[] | undefined | null;
+  onChange: (files: AttachedFile[]) => void;
+  studentId: string;
+  studentName: string;
+  uploaderId: string;
+  uploaderRole: string;
+  maxFiles?: number;
+  accept?: string;
+}
+
+export default function FileUploader({
+  label,
+  files = [],
+  onChange,
+  studentId,
+  studentName,
+  uploaderId,
+  uploaderRole,
+  maxFiles = 10,
+  accept = "*/*"
+}: FileUploaderProps) {
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Safeguard null or undefined files array
+  const safeFiles = Array.isArray(files) ? files : [];
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    setError(null);
+    const chosenFiles: File[] = Array.from(e.target.files) as File[];
+    
+    // Check limit
+    if (safeFiles.length + chosenFiles.length > maxFiles) {
+      setError(`Maximum file limit reached (${maxFiles} files allowed)`);
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const updatedFiles = [...safeFiles];
+      
+      // Upload files one-by-one to support precise naming & multi-upload
+      for (const file of chosenFiles) {
+        const result = await uploadFileToDrive(
+          file,
+          studentId,
+          studentName,
+          uploaderId,
+          uploaderRole
+        );
+
+        if (result.success && result.fileUrl && result.fileName) {
+          updatedFiles.push({
+            name: result.fileName,
+            url: result.fileUrl
+          });
+        } else {
+          setError(result.error || `Failed to upload "${file.name}"`);
+        }
+      }
+
+      onChange(updatedFiles);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'File upload failed');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveFile = (indexToRemove: number) => {
+    const updated = safeFiles.filter((_, idx) => idx !== indexToRemove);
+    onChange(updated);
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  return (
+    <div className="space-y-2">
+      {label && (
+        <span className="text-[10px] font-bold text-gray-400 block uppercase tracking-wider">
+          {label}
+        </span>
+      )}
+
+      {/* Upload Zone */}
+      <div 
+        onClick={triggerFileInput}
+        className={`border border-dashed border-gray-300 hover:border-tu-red/60 rounded-xl bg-gray-50/50 p-4 transition duration-200 cursor-pointer text-center flex flex-col items-center justify-center space-y-1.5 ${
+          isUploading ? 'pointer-events-none opacity-80' : ''
+        }`}
+      >
+        <input 
+          type="file" 
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          multiple 
+          accept={accept} 
+          className="hidden" 
+        />
+        {isUploading ? (
+          <>
+            <Loader2 size={18} className="animate-spin text-tu-red" />
+            <span className="text-xs font-semibold text-gray-600">Uploading attachment to Google Drive...</span>
+            <span className="text-[10px] text-gray-400 leading-none">Saving into student folder on your Drive</span>
+          </>
+        ) : (
+          <>
+            <Upload size={18} className="text-gray-400" />
+            <span className="text-xs font-semibold text-gray-700">Attach file (Click or Drag & Drop)</span>
+            <span className="text-[10px] text-gray-400 leading-none">Supports PDF, Word, Excel, Images (Max {maxFiles} files)</span>
+          </>
+        )}
+      </div>
+
+      {error && (
+        <div className="text-[10px] text-red-500 font-semibold bg-red-50 p-2 rounded-lg flex items-center gap-1">
+          <AlertCircle size={12} className="shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Uploaded File List */}
+      {safeFiles.length > 0 && (
+        <div className="space-y-1.5 pt-1">
+          {safeFiles.map((file, idx) => (
+            <div 
+              key={idx} 
+              className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-100 hover:border-gray-200 transition text-xs shadow-xs"
+            >
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <Paperclip size={12} className="text-tu-red shrink-0" />
+                <span className="text-[11px] font-medium text-gray-700 truncate" title={file.name}>
+                  {file.name}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 ml-2 shrink-0">
+                <a 
+                  href={file.url} 
+                  target="_blank" 
+                  rel="noreferrer referrer" 
+                  className="p-1 text-gray-400 hover:text-tu-red hover:bg-gray-50 rounded-md transition"
+                  title="Open file in new tab"
+                >
+                  <ExternalLink size={12} />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveFile(idx)}
+                  className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition"
+                  title="Remove attachment"
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
