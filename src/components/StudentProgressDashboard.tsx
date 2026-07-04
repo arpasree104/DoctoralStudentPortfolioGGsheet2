@@ -5,9 +5,10 @@ import { Search, Filter, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 
 interface StudentProgressDashboardProps {
   students: User[];
+  onSelectStudent?: (student: User) => void;
 }
 
-export default function StudentProgressDashboard({ students }: StudentProgressDashboardProps) {
+export default function StudentProgressDashboard({ students, onSelectStudent }: StudentProgressDashboardProps) {
   const [portfolios, setPortfolios] = useState<{ [key: string]: StudentPortfolioData | null }>({});
   const [loading, setLoading] = useState(true);
   const [nameFilter, setNameFilter] = useState('');
@@ -157,7 +158,7 @@ export default function StudentProgressDashboard({ students }: StudentProgressDa
               const latestProgress = progressList.length > 0 ? progressList[progressList.length - 1] : null;
 
               return (
-                <tr key={stud.UserID} className="hover:bg-red-50/20 transition-colors">
+                <tr key={stud.UserID} className="hover:bg-red-50/20 transition-colors cursor-pointer" onClick={() => onSelectStudent && onSelectStudent(stud)}>
                   <td className="py-3 px-4">
                     <div className="font-bold text-gray-800 text-sm">{stud.FullName}</div>
                     <div className="text-xs text-gray-500">{stud.StudentID} • Year {stud.YearOfAdmission || '-'}</div>

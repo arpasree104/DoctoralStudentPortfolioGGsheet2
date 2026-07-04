@@ -31,7 +31,7 @@ export default function AdvisorPanel({
 }: AdvisorPanelProps) {
   const [selectedStudent, setSelectedStudent] = useState<User | null>(null);
   const [selectedStudentPortfolio, setSelectedStudentPortfolio] = useState<StudentPortfolioData | null>(null);
-  const [activeTab, setActiveTab] = useState<'certs' | 'activities' | 'profile'>('certs');
+  const [activeTab, setActiveTab] = useState<'certs' | 'activities' | 'profile' | 'portfolio'>('certs');
   
   // Feedback states
   const [feedbackText, setFeedbackText] = useState('');
@@ -52,7 +52,7 @@ export default function AdvisorPanel({
   });
 
   // Default to selecting the first student for convenient overview if none is selected
-  const activeStudent = selectedStudent || myStudents[0];
+  const activeStudent = selectedStudent;
 
   const handleVerifyCert = async (certId: string, status: 'APPROVED' | 'REJECTED') => {
     setActingId(certId);
@@ -192,7 +192,18 @@ export default function AdvisorPanel({
                 }`}
               >
                 <Users size={14} />
-                View Full Profile
+                Student Demographics
+              </button>
+              <button
+                onClick={() => setActiveTab('portfolio')}
+                className={`flex items-center gap-2 px-6 py-2.5 border-b-2 font-medium text-xs transition-all duration-200 cursor-pointer ${
+                  activeTab === 'portfolio'
+                    ? 'border-tu-red text-tu-red font-bold'
+                    : 'border-transparent text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <FileText size={14} />
+                Full Portfolio (16 Sections)
               </button>
             </div>
 
@@ -499,8 +510,27 @@ export default function AdvisorPanel({
                   />
                 </div>
               )}
+              {activeTab === 'portfolio' && selectedStudentPortfolio && (
+                <div className="space-y-4 bg-white p-2 rounded-2xl">
+                  <EditPortfolio
+                    currentUser={activeStudent}
+                    portfolioData={selectedStudentPortfolio}
+                    certificates={certificates}
+                    configOptions={[]}
+                    onSavePortfolio={async () => {}}
+                    isReadOnly={true}
+                  />
+                </div>
+              )}
             </AnimatePresence>
           </>
+        ) : myStudents.length > 0 ? (
+          <StudentProgressDashboard students={myStudents} onSelectStudent={(stud) => {
+            setSelectedStudent(stud);
+            setSelectedStudentPortfolio(null);
+            getStudentPortfolio(stud.StudentID || '').then(port => setSelectedStudentPortfolio(port));
+            setFeedbackText('');
+          }} />
         ) : (
           <div className="bg-white p-12 text-center rounded-2xl border border-gray-100 shadow-xs">
             <Users className="mx-auto text-gray-300 mb-3" size={40} />
