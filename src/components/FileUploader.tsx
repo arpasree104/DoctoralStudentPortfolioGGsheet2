@@ -108,42 +108,7 @@ export default function FileUploader({
         </span>
       )}
 
-      {/* Upload Zone */}
-      <div 
-        onClick={triggerFileInput}
-        className={`border border-dashed border-gray-300 hover:border-tu-red/60 rounded-xl bg-gray-50/50 p-4 transition duration-200 cursor-pointer text-center flex flex-col items-center justify-center space-y-1.5 ${
-          isUploading ? 'pointer-events-none opacity-80' : ''
-        }`}
-      >
-        <input 
-          type="file" 
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          multiple 
-          accept={accept} 
-          className="hidden" 
-        />
-        {isUploading ? (
-          <>
-            <Loader2 size={18} className="animate-spin text-tu-red" />
-            <span className="text-xs font-semibold text-gray-600">Uploading attachment to Google Drive...</span>
-            <span className="text-[10px] text-gray-400 leading-none">Saving into student folder on your Drive</span>
-          </>
-        ) : (
-          <>
-            <Upload size={18} className="text-gray-400" />
-            <span className="text-xs font-semibold text-gray-700">Attach file (Click or Drag & Drop)</span>
-            <span className="text-[10px] text-gray-400 leading-none">Supports PDF, Word, Excel, Images (Max {maxFiles} files)</span>
-          </>
-        )}
-      </div>
 
-      {error && (
-        <div className="text-[10px] text-red-500 font-semibold bg-red-50 p-2 rounded-lg flex items-center gap-1">
-          <AlertCircle size={12} className="shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
 
       {/* Uploaded File List */}
       {safeFiles.length > 0 && (

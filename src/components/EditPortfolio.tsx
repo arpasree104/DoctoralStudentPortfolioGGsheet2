@@ -1647,8 +1647,7 @@ export default function EditPortfolio({
                   <div>
                     <label className="text-[10px] font-bold text-gray-400 block mb-1">Target Date / Period</label>
                     <input
-                      type="text"
-                      placeholder="e.g. June - Aug 2025"
+                      type="month"
                       value={prog.date}
                       onChange={e => {
                         const updated = [...(formData.dissertationProgress || [])];
@@ -1693,7 +1692,7 @@ export default function EditPortfolio({
                     />
                   </div>
 
-                  <div className="md:col-span-2 mt-2">
+                  <div className="md:col-span-1 mt-2">
                     <label className="text-[10px] font-bold text-gray-400 block mb-1">Progress Evidence (Google Drive)</label>
                     <FileUploader
                       label="Attach files"
