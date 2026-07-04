@@ -1,49 +1,48 @@
 const fs = require('fs');
-const content = fs.readFileSync('src/components/FileUploader.tsx', 'utf8');
+let content = fs.readFileSync('src/components/FileUploader.tsx', 'utf8');
 
-const targetList = `      {/* Uploaded File List */}
+const replacement = `      {/* Uploaded File List */}
       {safeFiles.length > 0 && (
         <div className="space-y-1.5 pt-1">
           {safeFiles.map((file, idx) => (
-            <div key={idx} className="flex items-center justify-between p-2.5 bg-white border border-gray-100 rounded-lg shadow-xs group">
-              <div className="flex items-center gap-2 overflow-hidden">
-                <FileText size={14} className="text-tu-red shrink-0" />
-                <span className="text-xs text-gray-700 font-medium truncate" title={file.name}>
+            <div 
+              key={idx} 
+              className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-100 hover:border-gray-200 transition text-xs shadow-xs"
+            >
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <Paperclip size={12} className="text-tu-red shrink-0" />
+                <span className="text-[11px] font-medium text-gray-700 truncate" title={file.name}>
                   {file.name}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center gap-1.5 ml-2 shrink-0">
                 <a 
-                  href={file.url}
+                  href={file.url} 
                   target="_blank" 
-                  rel="noopener noreferrer"
-                  className="p-1 text-gray-400 hover:text-blue-500 rounded hover:bg-blue-50 transition"
-                  title="Open file"
-                  onClick={(e) => e.stopPropagation()}
+                  rel="noreferrer referrer" 
+                  className="p-1 text-gray-400 hover:text-tu-red hover:bg-gray-50 rounded-md transition"
+                  title="Open file in new tab"
                 >
-                  <ExternalLink size={14} />
+                  <ExternalLink size={12} />
                 </a>
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeFile(idx);
-                  }}
-                  className="p-1 text-gray-400 hover:text-red-500 rounded hover:bg-red-50 transition"
-                  title="Remove file"
+                  onClick={() => handleRemoveFile(idx)}
+                  className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition"
+                  title="Remove attachment"
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={12} />
                 </button>
               </div>
             </div>
           ))}
         </div>
-      )}`;
+      )}
 
-const targetZone = `      {/* Upload Zone */}
+      {/* Upload Zone */}
       <div 
         onClick={triggerFileInput}
-        className={\`border border-dashed border-gray-300 hover:border-tu-red/60 rounded-xl bg-gray-50/50 p-4 transition duration-200 cursor-pointer text-center flex flex-col items-center justify-center space-y-1.5 \${
+        className={\`mt-2 border border-dashed border-gray-300 hover:border-tu-red/60 rounded-xl bg-gray-50/50 p-2.5 transition duration-200 cursor-pointer text-center flex flex-col items-center justify-center space-y-1.5 \${
           isUploading ? 'pointer-events-none opacity-80' : ''
         }\`}
       >
@@ -57,15 +56,15 @@ const targetZone = `      {/* Upload Zone */}
         />
         {isUploading ? (
           <>
-            <Loader2 size={18} className="animate-spin text-tu-red" />
-            <span className="text-xs font-semibold text-gray-600">Uploading attachment to Google Drive...</span>
-            <span className="text-[10px] text-gray-400 leading-none">Saving into student folder on your Drive</span>
+            <Loader2 size={16} className="animate-spin text-tu-red" />
+            <span className="text-[10px] font-semibold text-gray-600">Uploading attachment to Google Drive...</span>
+            <span className="text-[9px] text-gray-400 leading-none">Saving into student folder</span>
           </>
         ) : (
           <>
-            <Upload size={18} className="text-gray-400" />
-            <span className="text-xs font-semibold text-gray-700">Attach file (Click or Drag & Drop)</span>
-            <span className="text-[10px] text-gray-400 leading-none">Supports PDF, Word, Excel, Images (Max {maxFiles} files)</span>
+            <Upload size={16} className="text-gray-400" />
+            <span className="text-[10px] font-semibold text-gray-700">Attach file (Click or Drag & Drop)</span>
+            <span className="text-[9px] text-gray-400 leading-none">Max {maxFiles} files</span>
           </>
         )}
       </div>
@@ -75,9 +74,12 @@ const targetZone = `      {/* Upload Zone */}
           <AlertCircle size={12} className="shrink-0" />
           <span>{error}</span>
         </div>
-      )}`;
+      )}
+    </div>
+  );
+}`;
 
+content = content.replace(/\{\/\* Uploaded File List \*\/\}[\s\S]*\}\s*<\/div>\s*\);\s*\}/g, replacement);
 
-const newContent = content.replace(targetZone, "").replace(targetList, targetList + "\n\n" + targetZone);
-fs.writeFileSync('src/components/FileUploader.tsx', newContent);
+fs.writeFileSync('src/components/FileUploader.tsx', content);
 console.log("Done");

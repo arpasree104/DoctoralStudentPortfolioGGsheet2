@@ -1694,7 +1694,7 @@ export default function EditPortfolio({
 
                   <div className="md:col-span-1 mt-2">
                     <label className="text-[10px] font-bold text-gray-400 block mb-1">Progress Evidence (Google Drive)</label>
-                    <FileUploader
+                    <FileUploader isReadOnly={isReadOnly}
                       label="Attach files"
                       files={currentFiles}
                       onChange={(newFiles) => {
@@ -3264,7 +3264,7 @@ export default function EditPortfolio({
 
               <div className="space-y-2 pt-2">
                 <label className="text-[10px] font-bold text-gray-400 block uppercase">Upload Document File</label>
-                <FileUploader
+                <FileUploader isReadOnly={isReadOnly}
                   studentId={currentUser.StudentID || '6601010024'}
                   studentName={currentUser.FullName || 'Student'}
                   uploaderId={currentUser.StudentID || '6601010024'}

@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { User, Certificate, Activity, StudentPortfolioData } from '../types';
-import { Award, BookOpen, Clock, CheckCircle2, AlertCircle, FileText, Users, Settings, Plus, GraduationCap } from 'lucide-react';
+import { Award, BookOpen, Clock, CheckCircle2, AlertCircle, FileText, Users, Settings, Plus, GraduationCap, BellRing } from 'lucide-react';
 
 interface DashboardProps {
   currentUser: User;
@@ -216,8 +216,44 @@ export default function Dashboard({
   }
 
   // default to STUDENT view
+  // Calculate delayed dissertation progress
+  const delayedProgress = (portfolioData?.dissertationProgress || []).filter(prog => {
+    if (prog.progress === 'Completed' || !prog.date) return false;
+    // prog.date is YYYY-MM
+    const [year, month] = prog.date.split('-');
+    if (!year || !month) return false;
+    const targetDate = new Date(parseInt(year), parseInt(month) - 1);
+    const currentDate = new Date();
+    // Compare YYYY-MM directly
+    const targetMonthStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}`;
+    const currentMonthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+    return targetMonthStr < currentMonthStr;
+  });
+
   return (
     <div className="space-y-6">
+      {delayedProgress.length > 0 && (
+        <div className="bg-red-50 border border-red-200 p-4 rounded-2xl shadow-sm flex items-start gap-4">
+          <div className="p-2 bg-red-100 text-tu-red rounded-full shrink-0 mt-0.5">
+            <BellRing size={20} />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-red-800">Action Required: Overdue Progress</h3>
+            <p className="text-xs text-red-700 mt-1">
+              You have {delayedProgress.length} dissertation milestone(s) that have passed their target date and are not yet marked as 'Completed'. 
+              Please update your progress or notify your advisor.
+            </p>
+            <ul className="mt-2 space-y-1">
+              {delayedProgress.map((prog, idx) => (
+                <li key={idx} className="text-xs font-medium text-red-800 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                  {prog.activity} (Target: {prog.date})
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
       {/* Student Welcome Jumbotron */}
       <div className="bg-gradient-to-r from-tu-red to-red-800 text-white rounded-2xl p-6 shadow-md relative overflow-hidden">
         <div className="absolute right-0 bottom-0 opacity-10 translate-x-6 translate-y-6">
@@ -443,6 +479,58 @@ export default function Dashboard({
               "{englishReflection || 'No reflection logged yet.'}"
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Dissertation Progress (Sec 5.3) */}
+      <div className="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 space-y-4">
+        <div className="flex items-center justify-between border-b border-gray-50 pb-3">
+          <h3 className="text-base font-semibold text-gray-900">5.3 Dissertation Progress Record</h3>
+          <button onClick={() => onNavigate('edit')} className="text-xs font-semibold text-tu-red hover:underline cursor-pointer">
+            View / Update Progress
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {(portfolioData?.dissertationProgress || []).map((prog, idx) => (
+            <div key={idx} className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Planned Activity / Milestone</p>
+                  <h4 className="text-sm font-semibold text-gray-800">{prog.activity}</h4>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Target Date</p>
+                  <span className="text-xs font-mono font-medium text-gray-700 bg-white px-2 py-1 rounded border border-gray-200">
+                    {prog.date || 'Not set'}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Progress Outcome</p>
+                  <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                    prog.progress === 'Completed' ? 'bg-emerald-50 text-emerald-700' :
+                    prog.progress === 'In progress' ? 'bg-amber-50 text-amber-700' :
+                    'bg-gray-100 text-gray-600'
+                  }`}>
+                    {prog.progress || 'Not started'}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Obstacles</p>
+                  <p className="text-xs text-gray-600 truncate" title={prog.obstacles}>{prog.obstacles || '-'}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {(!portfolioData?.dissertationProgress || portfolioData.dissertationProgress.length === 0) && (
+            <div className="col-span-full py-8 text-center border-2 border-dashed border-gray-100 rounded-xl">
+              <p className="text-sm text-gray-500">No dissertation progress records yet.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
