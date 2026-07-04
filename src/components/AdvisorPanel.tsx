@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Users, Award, Clock, CheckCircle2, XCircle, MessageSquare, GraduationCap, ChevronRight, FileText, Check, AlertTriangle, Paperclip, ExternalLink, Calendar, Loader2 } from 'lucide-react';
 import { resolvePhotoUrl, resolveFileUrl, formatDisplayDate, getStudentPortfolio } from '../lib/googleSheets';
 import StudentInformation from './StudentInformation';
+import StudentProgressDashboard from './StudentProgressDashboard';
 import EditPortfolio from './EditPortfolio';
 
 interface AdvisorPanelProps {
@@ -68,10 +69,30 @@ export default function AdvisorPanel({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 print-override-grid">
       
       {/* Student list sidebar */}
-      <div className="lg:col-span-1 space-y-4">
+      <div className="lg:col-span-1 space-y-4 no-print">
+        <button
+          onClick={() => {
+            setSelectedStudent(null);
+            setSelectedStudentPortfolio(null);
+          }}
+          className={`w-full text-left p-3 rounded-xl transition duration-200 flex items-center gap-3 border cursor-pointer ${
+            !selectedStudent
+              ? 'bg-red-50/50 border-red-100 text-tu-red'
+              : 'border-transparent text-gray-700 bg-white hover:bg-gray-50'
+          }`}
+        >
+          <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-tu-red"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="9" x2="9" y1="21" y2="9"/></svg>
+          </div>
+          <div>
+            <div className="font-bold text-sm">Progress Dashboard</div>
+            <div className="text-[10px] opacity-75">All Supervised Students</div>
+          </div>
+        </button>
+
         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs space-y-3">
           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Supervised Students</h3>
           
@@ -115,7 +136,7 @@ export default function AdvisorPanel({
         {activeStudent ? (
           <>
             {/* Student Brief Demographics Header */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs flex flex-col sm:flex-row items-center gap-5">
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs flex flex-col sm:flex-row items-center gap-5 no-print">
               <img
                 src={resolvePhotoUrl(activeStudent.PhotoURL)}
                 alt={activeStudent.FullName}
@@ -139,7 +160,7 @@ export default function AdvisorPanel({
             </div>
 
             {/* Sub-tab selection */}
-            <div className="flex border-b border-gray-200">
+            <div className="flex border-b border-gray-200 no-print">
               <button
                 onClick={() => setActiveTab('certs')}
                 className={`flex items-center gap-2 px-6 py-2.5 border-b-2 font-medium text-xs transition-all duration-200 cursor-pointer ${
@@ -178,10 +199,7 @@ export default function AdvisorPanel({
             <AnimatePresence mode="wait">
               {/* CERTIFICATE VERIFICATION TAB */}
               {activeTab === 'certs' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
+                <div
                   className="space-y-4"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -304,15 +322,12 @@ export default function AdvisorPanel({
                       </div>
                     )}
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {/* ACTIVITY PROGRESS TAB */}
               {activeTab === 'activities' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
+                <div
                   className="space-y-4"
                 >
                   <div className="space-y-5">
@@ -463,15 +478,12 @@ export default function AdvisorPanel({
                       </div>
                     )}
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {/* VIEW FULL PROFILE TAB */}
               {activeTab === 'profile' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
+                <div
                   className="space-y-4"
                 >
                   <StudentInformation
@@ -485,7 +497,7 @@ export default function AdvisorPanel({
                     onAddActivity={async () => {}}
                     isReadOnly={true}
                   />
-                </motion.div>
+                </div>
               )}
             </AnimatePresence>
           </>

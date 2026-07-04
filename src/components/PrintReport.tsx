@@ -36,7 +36,7 @@ export default function PrintReport({
   const approvedActs = activities.filter(a => a.StudentID === currentUser.StudentID && a.Status === 'APPROVED');
 
   return (
-    <div className="space-y-6 text-xs text-gray-700">
+    <div id="print-root" className="space-y-6 text-xs text-gray-700">
       
       {/* Print Controls Ribbon - Hidden during physical printing via no-print class */}
       <div className="no-print bg-white p-4 rounded-2xl border border-gray-100 shadow-xs flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -66,12 +66,12 @@ export default function PrintReport({
       {/* ------------------------------------------------------------- */}
       {/* PHYSICAL A4 REPORT STAGED CONTAINER */}
       {/* ------------------------------------------------------------- */}
-      <div className="bg-white max-w-[850px] mx-auto p-8 sm:p-12 border border-gray-100 rounded-2xl shadow-md space-y-12 select-text text-gray-900 leading-relaxed font-sans">
+      <div className="bg-white max-w-[850px] mx-auto p-8 sm:p-12 border border-gray-100 rounded-2xl shadow-md print:max-w-none print:mx-0 print:border-none print:shadow-none print:p-0 space-y-12 select-text text-gray-900 leading-relaxed font-sans">
         
         {/* ========================================== */}
         {/* PAGE 1: OFFICIAL COVER PAGE */}
         {/* ========================================== */}
-        <div className="min-h-[1000px] flex flex-col justify-between print-page-break relative pt-10">
+        <div className="flex flex-col justify-between relative pt-10">
           
           {/* Cover Head Banner */}
           <div className="bg-gradient-to-br from-amber-400 to-amber-500 rounded-2xl p-8 text-tu-red relative overflow-hidden shadow-xs">
@@ -151,7 +151,7 @@ export default function PrintReport({
         {/* ========================================== */}
         {/* PAGE 2: TABLE OF CONTENTS */}
         {/* ========================================== */}
-        <div className="min-h-[1000px] print-page-break space-y-6 pt-10">
+        <div className="print-page-break space-y-6 pt-10">
           <h2 className="text-xl font-bold text-tu-red border-b border-gray-100 pb-2">Table of Contents</h2>
           
           <div className="space-y-4 text-xs">
@@ -197,7 +197,7 @@ export default function PrintReport({
         {/* ========================================== */}
         {/* PAGE 3: STUDENT PROFILE */}
         {/* ========================================== */}
-        <div className="min-h-[1000px] print-page-break space-y-6 pt-10">
+        <div className="print-page-break space-y-6 pt-10">
           <span className="text-[10px] uppercase font-bold tracking-wider text-tu-red font-mono">Section 1</span>
           <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-2">Student Profile</h2>
 
@@ -280,7 +280,7 @@ export default function PrintReport({
         {/* ========================================== */}
         {/* PAGE 4: MILESTONES & TIMELINE */}
         {/* ========================================== */}
-        <div className="min-h-[1000px] print-page-break space-y-6 pt-10">
+        <div className="print-page-break space-y-6 pt-10">
           <span className="text-[10px] uppercase font-bold tracking-wider text-tu-red font-mono">Section 2</span>
           <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-2 font-sans">Program of Study and Academic Milestones</h2>
 
@@ -404,7 +404,7 @@ export default function PrintReport({
         {/* ========================================== */}
         {/* PAGE 5: ENGLISH PROFICIENCY */}
         {/* ========================================== */}
-        <div className="min-h-[1000px] print-page-break space-y-6 pt-10">
+        <div className="print-page-break space-y-6 pt-10">
           <span className="text-[10px] uppercase font-bold tracking-wider text-tu-red font-mono">Section 3</span>
           <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-2">English Language Proficiency Requirement</h2>
 
@@ -507,7 +507,7 @@ export default function PrintReport({
         {/* ========================================== */}
         {/* PAGE 6: COURSEWORK COMPLETED */}
         {/* ========================================== */}
-        <div className="min-h-[1000px] print-page-break space-y-6 pt-10">
+        <div className="print-page-break space-y-6 pt-10">
           <span className="text-[10px] uppercase font-bold tracking-wider text-tu-red font-mono">Section 4</span>
           <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-2">Coursework and Academic Development</h2>
 
@@ -629,7 +629,7 @@ export default function PrintReport({
         {/* ========================================== */}
         {/* PAGE 7: DISSERTATION DETAILS */}
         {/* ========================================== */}
-        <div className="min-h-[1000px] print-page-break space-y-6 pt-10">
+        <div className="print-page-break space-y-6 pt-10">
           <span className="text-[10px] uppercase font-bold tracking-wider text-tu-red font-mono">Section 5</span>
           <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-2">Research Development and Dissertation Progress</h2>
 
@@ -691,22 +691,58 @@ export default function PrintReport({
           <div className="space-y-4 pt-4">
             <h3 className="text-sm font-bold text-tu-red">5.3 Dissertation Progress Record</h3>
             {portfolioData.dissertationProgress && portfolioData.dissertationProgress.length > 0 ? (
-              <table className="w-full text-left text-xs border border-gray-200">
+              <table className="w-full text-left text-[11px] border border-gray-200">
                 <thead>
                   <tr className="bg-gray-50 font-bold border-b border-gray-200">
-                    <th className="p-2.5">Planned Activity / Milestone</th>
-                    <th className="p-2.5">Target Date</th>
-                    <th className="p-2.5">Progress Outcome</th>
+                    <th className="p-2">Planned Activity</th>
+                    <th className="p-2">Target Date</th>
+                    <th className="p-2">Progress Outcome</th>
+                    <th className="p-2">Obstacles (If any)</th>
+                    <th className="p-2">Evidence</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {portfolioData.dissertationProgress.map((prog, i) => (
-                    <tr key={i} className="align-top">
-                      <td className="p-2.5 font-bold text-gray-800">{prog.activity}</td>
-                      <td className="p-2.5 font-mono text-gray-600">{prog.date}</td>
-                      <td className="p-2.5 text-gray-600">{prog.progress}</td>
-                    </tr>
-                  ))}
+                  {portfolioData.dissertationProgress.map((prog, i) => {
+                    let files = [];
+                    if (Array.isArray(prog.evidence)) {
+                      files = prog.evidence.map(f => typeof f === 'string' ? { name: 'Attachment', url: f } : f);
+                    } else if (typeof prog.evidence === 'string') {
+                      if (prog.evidence.trim().startsWith('[')) {
+                        try { files = JSON.parse(prog.evidence); } catch(e) { files = [{ name: 'Attachment', url: prog.evidence }]; }
+                      } else if (prog.evidence.trim()) {
+                        files = [{ name: 'Attachment', url: prog.evidence }];
+                      }
+                    }
+                    return (
+                      <tr key={i} className="align-top">
+                        <td className="p-2 font-bold text-gray-800">{prog.activity}</td>
+                        <td className="p-2 font-mono text-gray-600">{prog.date}</td>
+                        <td className="p-2 text-gray-600">
+                          {prog.progress === 'Completed' && <span className="text-green-600 font-semibold">{prog.progress}</span>}
+                          {prog.progress === 'In progress' && <span className="text-blue-600 font-semibold">{prog.progress}</span>}
+                          {prog.progress === 'Postponed' && <span className="text-orange-600 font-semibold">{prog.progress}</span>}
+                          {prog.progress === 'Not started' && <span className="text-gray-500 font-semibold">{prog.progress}</span>}
+                          {!['Completed', 'In progress', 'Postponed', 'Not started'].includes(prog.progress) && <span>{prog.progress}</span>}
+                        </td>
+                        <td className="p-2 text-gray-600">{prog.obstacles || '-'}</td>
+                        <td className="p-2">
+                          {files.length > 0 ? (
+                            <ul className="list-disc pl-3 text-[10px] space-y-1">
+                              {files.map((f, j) => (
+                                <li key={j}>
+                                  <a href={f.url} target="_blank" rel="noopener noreferrer" className="text-tu-red hover:underline">
+                                    {f.name}
+                                  </a>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <span className="text-gray-400 text-[10px] italic">No evidence</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             ) : (
@@ -785,7 +821,7 @@ export default function PrintReport({
         {/* ========================================== */}
         {/* PAGE 8: RESEARCH EXPERIENCE HOURS */}
         {/* ========================================== */}
-        <div className="min-h-[1000px] print-page-break space-y-6 pt-10">
+        <div className="print-page-break space-y-6 pt-10">
           <span className="text-[10px] uppercase font-bold tracking-wider text-tu-red font-mono">Section 6</span>
           <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-2">Research Experience Requirement</h2>
 
@@ -829,7 +865,7 @@ export default function PrintReport({
         {/* ========================================== */}
         {/* PAGE 9: SCHOLARLY PUBLICATIONS */}
         {/* ========================================== */}
-        <div className="min-h-[1000px] print-page-break space-y-6 pt-10">
+        <div className="print-page-break space-y-6 pt-10">
           <span className="text-[10px] uppercase font-bold tracking-wider text-tu-red font-mono">Section 7</span>
           <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-2">Scholarly Output</h2>
 
@@ -886,7 +922,7 @@ export default function PrintReport({
         {/* ========================================== */}
         {/* PAGE 10: COMPETENCY SELF-ASSESSMENT */}
         {/* ========================================== */}
-        <div className="min-h-[1000px] print-page-break space-y-6 pt-10">
+        <div className="print-page-break space-y-6 pt-10">
           <span className="text-[10px] uppercase font-bold tracking-wider text-tu-red font-mono">Section 12</span>
           <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-2">Self-Assessment of Doctoral Competencies</h2>
 
@@ -915,7 +951,7 @@ export default function PrintReport({
         {/* ========================================== */}
         {/* PAGE 11: ADVISOR COMMENTS & ENDORSEMENTS SIGN-OFF */}
         {/* ========================================== */}
-        <div className="min-h-[1000px] print-page-break space-y-10 pt-10">
+        <div className="print-page-break space-y-10 pt-10">
           <div>
             <span className="text-[10px] uppercase font-bold tracking-wider text-tu-red font-mono">Section 15 & 16</span>
             <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-2">Advisor Comments and Sign-off</h2>

@@ -121,7 +121,7 @@ export default function EditPortfolio({
   const addDissertationProgress = () => {
     setFormData({
       ...formData,
-      dissertationProgress: [...(formData.dissertationProgress || []), { activity: '', date: '', progress: '', evidence: '' }]
+      dissertationProgress: [...(formData.dissertationProgress || []), { activity: '', date: '', progress: 'Not started', obstacles: '', evidence: '' }]
     });
   };
 
@@ -222,7 +222,7 @@ export default function EditPortfolio({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div className={`grid grid-cols-1 lg:grid-cols-4 gap-6 ${isReadOnly ? 'portfolio-readonly' : ''}`}>
       
       {/* Left Column: Sections Index Menu */}
       <div className="lg:col-span-1 space-y-2">
@@ -1601,23 +1601,34 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {(formData.dissertationProgress || []).map((prog, idx) => (
-                <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-4 gap-4">
+              {(formData.dissertationProgress || []).map((prog, idx) => {
+                let currentFiles = [];
+                if (Array.isArray(prog.evidence)) {
+                  currentFiles = prog.evidence.map(f => typeof f === 'string' ? { name: 'Attachment', url: f } : f);
+                } else if (typeof prog.evidence === 'string') {
+                  if (prog.evidence.trim().startsWith('[')) {
+                    try { currentFiles = JSON.parse(prog.evidence); } catch(e) { currentFiles = [{ name: 'Attachment', url: prog.evidence }]; }
+                  } else if (prog.evidence.trim()) {
+                    currentFiles = [{ name: 'Attachment', url: prog.evidence }];
+                  }
+                }
+                currentFiles = currentFiles.filter(f => f && f.url);
+
+                return (
+                <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 md:grid-cols-2 gap-4">
                   <button
                     onClick={() => {
                       const updated = (formData.dissertationProgress || []).filter((_, i) => i !== idx);
                       setFormData({ ...formData, dissertationProgress: updated });
                     }}
-                    className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition cursor-pointer"
+                    className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition cursor-pointer z-10"
                   >
                     <Trash2 size={14} />
                   </button>
 
-                  <div className="sm:col-span-2">
+                  <div>
                     <label className="text-[10px] font-bold text-gray-400 block mb-1">Planned Activity / Milestone</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Conducted literature review for Chapter 2"
+                    <select
                       value={prog.activity}
                       onChange={e => {
                         const updated = [...(formData.dissertationProgress || [])];
@@ -1625,7 +1636,12 @@ export default function EditPortfolio({
                         setFormData({ ...formData, dissertationProgress: updated });
                       }}
                       className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold"
-                    />
+                    >
+                      <option value="">-- Select Activity --</option>
+                      {configOptions.filter(o => o.OptionType === 'ProgressActivity').map(opt => (
+                        <option key={opt.id} value={opt.OptionValue}>{opt.OptionValue}</option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
@@ -1645,9 +1661,7 @@ export default function EditPortfolio({
 
                   <div>
                     <label className="text-[10px] font-bold text-gray-400 block mb-1">Progress / Achievement Outcome</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Completed draft, submitted to advisor"
+                    <select
                       value={prog.progress}
                       onChange={e => {
                         const updated = [...(formData.dissertationProgress || [])];
@@ -1655,10 +1669,49 @@ export default function EditPortfolio({
                         setFormData({ ...formData, dissertationProgress: updated });
                       }}
                       className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs"
+                    >
+                      <option value="">-- Select Progress --</option>
+                      <option value="Not started">Not started</option>
+                      <option value="In progress">In progress</option>
+                      <option value="Postponed">Postponed</option>
+                      <option value="Completed">Completed</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 block mb-1">Obstacles (if any)</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Delayed IRB approval"
+                      value={prog.obstacles || ''}
+                      onChange={e => {
+                        const updated = [...(formData.dissertationProgress || [])];
+                        updated[idx].obstacles = e.target.value;
+                        setFormData({ ...formData, dissertationProgress: updated });
+                      }}
+                      className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2 mt-2">
+                    <label className="text-[10px] font-bold text-gray-400 block mb-1">Progress Evidence (Google Drive)</label>
+                    <FileUploader
+                      label="Attach files"
+                      files={currentFiles}
+                      onChange={(newFiles) => {
+                        const updated = [...(formData.dissertationProgress || [])];
+                        updated[idx].evidence = JSON.stringify(newFiles);
+                        setFormData({ ...formData, dissertationProgress: updated });
+                      }}
+                      studentId={currentUser.StudentID || ''}
+                      studentName={currentUser.FullName || 'Student'}
+                      uploaderId={currentUser.UserID}
+                      uploaderRole={currentUser.Role}
                     />
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* 5.4 Doctoral Advisory Committee Meetings */}

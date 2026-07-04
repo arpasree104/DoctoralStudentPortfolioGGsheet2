@@ -37,4 +37,19 @@
     box-shadow: none !important;
     background: transparent !important;
   }
+  /* Disable grid layouts for print to ensure full width and proper pagination */
+  .print-override-grid {
+    display: block !important;
+  }
+  /* Remove flex constraints as well if they cause issues, but usually grid is the main culprit */
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+
+.portfolio-readonly button:has(svg.lucide-plus),
+.portfolio-readonly button:has(svg.lucide-trash-2) {
+  display: none !important;
 }

@@ -1171,7 +1171,7 @@ function getOrCreateSheet(sheetName) {
       "P2_Milestones": ["StudentID", "MilestoneKey", "MilestoneLabel", "PlannedDate", "ActualDate", "Remarks", "Status", "LastUpdated"],
       "P3_EnglishLanguage": ["StudentID", "RecordType", "TestName", "DateTaken", "ScoreAchieved", "RequiredScore", "TestStatus", "TestEvidence", "ActivityDate", "ActivityName", "ActivityOrganizer", "ActivityDescription", "ActivityEvidence", "EnglishReflection", "VerificationComments", "VerificationName", "VerificationDate", "LastUpdated"],
       "P4_Coursework": ["StudentID", "RecordType", "CourseCode", "CourseTitle", "Semester", "Credits", "Grade", "WorkshopDate", "WorkshopTitle", "WorkshopOrganizer", "WorkshopRole", "WorkshopKeyLearning", "LastUpdated"],
-      "P5_Dissertation": ["StudentID", "RecordType", "InfoTitle", "InfoBackground", "InfoProblem", "InfoObjectives", "InfoHypotheses", "InfoConceptualFramework", "InfoMethodology", "InfoResearchTopic", "ProgressActivity", "ProgressDate", "ProgressDetails", "ProgressEvidence", "MeetingDate", "MeetingPersons", "MeetingIssues", "MeetingActionPoints", "LastUpdated"],
+      "P5_Dissertation": ["StudentID", "RecordType", "InfoTitle", "InfoBackground", "InfoProblem", "InfoObjectives", "InfoHypotheses", "InfoConceptualFramework", "InfoMethodology", "InfoResearchTopic", "ProgressActivity", "ProgressDate", "ProgressDetails", "ProgressEvidence", "MeetingDate", "MeetingPersons", "MeetingIssues", "MeetingActionPoints", "LastUpdated", "ProgressObstacles"],
       "P6_ResearchExperience": ["StudentID", "RecordType", "EthicsDateApplied", "EthicsDateApproved", "EthicsApprovalNumber", "EthicsAmendments", "EthicsConfidentiality", "ExperienceDate", "ExperienceActivity", "ExperienceDescription", "ExperienceHours", "ExperienceSupervisor", "ExperienceEvidence", "ResearchReflection", "LastUpdated"],
       "P7_ScholarlyOutput": ["StudentID", "RecordType", "ConfDate", "ConfTitle", "ConfName", "ConfType", "ConfVenue", "PubYear", "PubTitle", "PubJournal", "PubStatus", "PubDoi", "MscTitle", "MscJournal", "MscStage", "MscPlannedSubmission", "GrantTitle", "GrantSource", "GrantRole", "GrantAmount", "GrantPeriod", "AwardDate", "AwardName", "AwardOrganizer", "AwardDescription", "LastUpdated"],
       "P8_TeachingService": ["StudentID", "RecordType", "TeachSemester", "TeachCourse", "TeachRole", "TeachStudentLevel", "TeachDescription", "SupervisionDate", "SupervisionType", "SupervisionStudentLevel", "SupervisionDescription", "ServiceDate", "ServiceActivity", "ServiceRole", "ServiceOrganization", "LastUpdated"],
@@ -1208,7 +1208,7 @@ function setupDatabase() {
     "P2_Milestones": ["StudentID", "MilestoneKey", "MilestoneLabel", "PlannedDate", "ActualDate", "Remarks", "Status", "LastUpdated"],
     "P3_EnglishLanguage": ["StudentID", "RecordType", "TestName", "DateTaken", "ScoreAchieved", "RequiredScore", "TestStatus", "TestEvidence", "ActivityDate", "ActivityName", "ActivityOrganizer", "ActivityDescription", "ActivityEvidence", "EnglishReflection", "VerificationComments", "VerificationName", "VerificationDate", "LastUpdated"],
     "P4_Coursework": ["StudentID", "RecordType", "CourseCode", "CourseTitle", "Semester", "Credits", "Grade", "WorkshopDate", "WorkshopTitle", "WorkshopOrganizer", "WorkshopRole", "WorkshopKeyLearning", "LastUpdated"],
-    "P5_Dissertation": ["StudentID", "RecordType", "InfoTitle", "InfoBackground", "InfoProblem", "InfoObjectives", "InfoHypotheses", "InfoConceptualFramework", "InfoMethodology", "InfoResearchTopic", "ProgressActivity", "ProgressDate", "ProgressDetails", "ProgressEvidence", "MeetingDate", "MeetingPersons", "MeetingIssues", "MeetingActionPoints", "LastUpdated"],
+    "P5_Dissertation": ["StudentID", "RecordType", "InfoTitle", "InfoBackground", "InfoProblem", "InfoObjectives", "InfoHypotheses", "InfoConceptualFramework", "InfoMethodology", "InfoResearchTopic", "ProgressActivity", "ProgressDate", "ProgressDetails", "ProgressEvidence", "MeetingDate", "MeetingPersons", "MeetingIssues", "MeetingActionPoints", "LastUpdated", "ProgressObstacles"],
     "P6_ResearchExperience": ["StudentID", "RecordType", "EthicsDateApplied", "EthicsDateApproved", "EthicsApprovalNumber", "EthicsAmendments", "EthicsConfidentiality", "ExperienceDate", "ExperienceActivity", "ExperienceDescription", "ExperienceHours", "ExperienceSupervisor", "ExperienceEvidence", "ResearchReflection", "LastUpdated"],
     "P7_ScholarlyOutput": ["StudentID", "RecordType", "ConfDate", "ConfTitle", "ConfName", "ConfType", "ConfVenue", "PubYear", "PubTitle", "PubJournal", "PubStatus", "PubDoi", "MscTitle", "MscJournal", "MscStage", "MscPlannedSubmission", "GrantTitle", "GrantSource", "GrantRole", "GrantAmount", "GrantPeriod", "AwardDate", "AwardName", "AwardOrganizer", "AwardDescription", "LastUpdated"],
     "P8_TeachingService": ["StudentID", "RecordType", "TeachSemester", "TeachCourse", "TeachRole", "TeachStudentLevel", "TeachDescription", "SupervisionDate", "SupervisionType", "SupervisionStudentLevel", "SupervisionDescription", "ServiceDate", "ServiceActivity", "ServiceRole", "ServiceOrganization", "LastUpdated"],
@@ -1530,6 +1530,7 @@ function loadPortfolioFromSheets(studentId) {
               activity: r.ProgressActivity || "",
               date: formatDate(r.ProgressDate),
               progress: r.ProgressDetails || "",
+              obstacles: r.ProgressObstacles || "",
               evidence: r.ProgressEvidence || ""
             });
           } else if (r.RecordType === "MEETING") {
@@ -1932,21 +1933,22 @@ function savePortfolioToSheets(studentId, portfolio) {
   var s5 = ss.getSheetByName("P5_Dissertation");
   if (s5) {
     deleteRow(s5, "StudentID", studentId);
+    s5.getRange(1, 1, 1, 20).setValues([["StudentID", "RecordType", "InfoTitle", "InfoBackground", "InfoProblem", "InfoObjectives", "InfoHypotheses", "InfoConceptualFramework", "InfoMethodology", "InfoResearchTopic", "ProgressActivity", "ProgressDate", "ProgressDetails", "ProgressEvidence", "MeetingDate", "MeetingPersons", "MeetingIssues", "MeetingActionPoints", "LastUpdated", "ProgressObstacles"]]);
     var di = portfolio.dissertationInfo || {};
-    appendObjectAsRow(s5, ["StudentID", "RecordType", "InfoTitle", "InfoBackground", "InfoProblem", "InfoObjectives", "InfoHypotheses", "InfoConceptualFramework", "InfoMethodology", "InfoResearchTopic", "ProgressActivity", "ProgressDate", "ProgressDetails", "ProgressEvidence", "MeetingDate", "MeetingPersons", "MeetingIssues", "MeetingActionPoints", "LastUpdated"], {
+    appendObjectAsRow(s5, ["StudentID", "RecordType", "InfoTitle", "InfoBackground", "InfoProblem", "InfoObjectives", "InfoHypotheses", "InfoConceptualFramework", "InfoMethodology", "InfoResearchTopic", "ProgressActivity", "ProgressDate", "ProgressDetails", "ProgressEvidence", "MeetingDate", "MeetingPersons", "MeetingIssues", "MeetingActionPoints", "LastUpdated", "ProgressObstacles"], {
       StudentID: studentId, RecordType: "INFO", InfoTitle: di.title, InfoBackground: di.background, InfoProblem: di.problem, InfoObjectives: di.objectives, InfoHypotheses: di.hypotheses, InfoConceptualFramework: di.conceptualFramework, InfoMethodology: di.methodology, InfoResearchTopic: di.researchTopic || "", LastUpdated: nowStr
     });
     var dps = portfolio.dissertationProgress || [];
     for (var i = 0; i < dps.length; i++) {
       var dp = dps[i];
-      appendObjectAsRow(s5, ["StudentID", "RecordType", "InfoTitle", "InfoBackground", "InfoProblem", "InfoObjectives", "InfoHypotheses", "InfoConceptualFramework", "InfoMethodology", "InfoResearchTopic", "ProgressActivity", "ProgressDate", "ProgressDetails", "ProgressEvidence", "MeetingDate", "MeetingPersons", "MeetingIssues", "MeetingActionPoints", "LastUpdated"], {
-        StudentID: studentId, RecordType: "PROGRESS", ProgressActivity: dp.activity, ProgressDate: formatDate(dp.date), ProgressDetails: dp.progress, ProgressEvidence: dp.evidence, LastUpdated: nowStr
+      appendObjectAsRow(s5, ["StudentID", "RecordType", "InfoTitle", "InfoBackground", "InfoProblem", "InfoObjectives", "InfoHypotheses", "InfoConceptualFramework", "InfoMethodology", "InfoResearchTopic", "ProgressActivity", "ProgressDate", "ProgressDetails", "ProgressEvidence", "MeetingDate", "MeetingPersons", "MeetingIssues", "MeetingActionPoints", "LastUpdated", "ProgressObstacles"], {
+        StudentID: studentId, RecordType: "PROGRESS", ProgressActivity: dp.activity, ProgressDate: formatDate(dp.date), ProgressDetails: dp.progress, ProgressEvidence: dp.evidence, ProgressObstacles: dp.obstacles || "", LastUpdated: nowStr
       });
     }
     var ams = portfolio.advisorMeetings || [];
     for (var i = 0; i < ams.length; i++) {
       var am = ams[i];
-      appendObjectAsRow(s5, ["StudentID", "RecordType", "InfoTitle", "InfoBackground", "InfoProblem", "InfoObjectives", "InfoHypotheses", "InfoConceptualFramework", "InfoMethodology", "InfoResearchTopic", "ProgressActivity", "ProgressDate", "ProgressDetails", "ProgressEvidence", "MeetingDate", "MeetingPersons", "MeetingIssues", "MeetingActionPoints", "LastUpdated"], {
+      appendObjectAsRow(s5, ["StudentID", "RecordType", "InfoTitle", "InfoBackground", "InfoProblem", "InfoObjectives", "InfoHypotheses", "InfoConceptualFramework", "InfoMethodology", "InfoResearchTopic", "ProgressActivity", "ProgressDate", "ProgressDetails", "ProgressEvidence", "MeetingDate", "MeetingPersons", "MeetingIssues", "MeetingActionPoints", "LastUpdated", "ProgressObstacles"], {
         StudentID: studentId, RecordType: "MEETING", MeetingDate: formatDate(am.date), MeetingPersons: am.persons, MeetingIssues: am.issues, MeetingActionPoints: am.actionPoints, LastUpdated: nowStr
       });
     }

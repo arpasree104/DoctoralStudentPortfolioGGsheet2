@@ -10,6 +10,7 @@ import { User as UserIcon, Award, Image as ImageIcon, Plus, Edit2, CheckCircle2,
 import FileUploader, { AttachedFile } from './FileUploader';
 import DatePickerField from './DatePickerField';
 import EditPortfolio from './EditPortfolio';
+import PrintReport from './PrintReport';
 import { getAppsScriptUrl, uploadFileToDrive, resolvePhotoUrl, resolveFileUrl, formatDisplayDate } from '../lib/googleSheets';
 
 interface StudentInformationProps {
@@ -95,7 +96,7 @@ export default function StudentInformation({
   onDeleteActivity,
   isReadOnly = false
 }: StudentInformationProps) {
-  const [activeSubTab, setActiveSubTab] = useState<'demographics' | 'certificates' | 'activities' | 'portfolio'>('demographics');
+  const [activeSubTab, setActiveSubTab] = useState<'demographics' | 'certificates' | 'activities' | 'portfolio' | 'report'>('demographics');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -339,7 +340,7 @@ export default function StudentInformation({
   return (
     <div className="space-y-6">
       {/* Subtab selection */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-gray-200 no-print">
         <button
           onClick={() => setActiveSubTab('demographics')}
           className={`flex items-center gap-2 px-6 py-3 border-b-2 font-medium text-sm transition-all duration-200 cursor-pointer ${
@@ -378,17 +379,30 @@ export default function StudentInformation({
           </>
         )}
         {(isReadOnly && portfolioData && currentUser.Role === 'STUDENT') && (
-          <button
-            onClick={() => setActiveSubTab('portfolio')}
-            className={`flex items-center gap-2 px-6 py-3 border-b-2 font-medium text-sm transition-all duration-200 cursor-pointer ${
-              activeSubTab === 'portfolio'
-                ? 'border-tu-red text-tu-red'
-                : 'border-transparent text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            <FileText size={16} />
-            Full Portfolio (16 Sections)
-          </button>
+          <>
+            <button
+              onClick={() => setActiveSubTab('portfolio')}
+              className={`flex items-center gap-2 px-6 py-3 border-b-2 font-medium text-sm transition-all duration-200 cursor-pointer ${
+                activeSubTab === 'portfolio'
+                  ? 'border-tu-red text-tu-red'
+                  : 'border-transparent text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              <FileText size={16} />
+              Full Portfolio (16 Sections)
+            </button>
+            <button
+              onClick={() => setActiveSubTab('report')}
+              className={`flex items-center gap-2 px-6 py-3 border-b-2 font-medium text-sm transition-all duration-200 cursor-pointer ${
+                activeSubTab === 'report'
+                  ? 'border-tu-red text-tu-red'
+                  : 'border-transparent text-gray-500 hover:text-gray-800'
+              }`}
+            >
+              <FileText size={16} />
+              View Report (Print PDF)
+            </button>
+          </>
         )}
       </div>
 
@@ -397,10 +411,7 @@ export default function StudentInformation({
         {/* DEMOGRAPHICS SUBTAB */}
         {/* ----------------------------------------------------------------- */}
         {activeSubTab === 'demographics' && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+          <div
             className="grid grid-cols-1 lg:grid-cols-3 gap-6"
           >
             {/* Left Side: Avatar and Quick Metadata */}
@@ -744,17 +755,14 @@ export default function StudentInformation({
                 </div>
               </form>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* ----------------------------------------------------------------- */}
         {/* CERTIFICATES SUBTAB */}
         {/* ----------------------------------------------------------------- */}
         {activeSubTab === 'certificates' && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+          <div
             className="space-y-6"
           >
             {/* Form to upload certificate */}
@@ -948,17 +956,14 @@ export default function StudentInformation({
                   ))}
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* ----------------------------------------------------------------- */}
         {/* ACTIVITIES SUBTAB */}
         {/* ----------------------------------------------------------------- */}
         {activeSubTab === 'activities' && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+          <div
             className="space-y-6"
           >
             {/* Form to upload progress with collage images */}
@@ -1189,19 +1194,16 @@ export default function StudentInformation({
                   ))}
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* ----------------------------------------------------------------- */}
         {/* PORTFOLIO SUBTAB */}
         {/* ----------------------------------------------------------------- */}
         {(activeSubTab === 'portfolio' && portfolioData) && (
-          <motion.div
+          <div
             key="portfolio"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="w-full"
+            className="w-full print:block"
           >
             <div className="bg-gray-50/50 p-2 md:p-4 rounded-3xl border border-gray-100">
               <EditPortfolio
@@ -1213,7 +1215,27 @@ export default function StudentInformation({
                 isReadOnly={true}
               />
             </div>
-          </motion.div>
+          </div>
+        )}
+
+        {/* ----------------------------------------------------------------- */}
+        {/* REPORT SUBTAB */}
+        {/* ----------------------------------------------------------------- */}
+        {(activeSubTab === 'report' && portfolioData) && (
+          <div
+            key="report"
+            className="w-full print:block"
+          >
+            <div className="bg-gray-50/50 p-2 md:p-4 rounded-3xl border border-gray-100">
+              <PrintReport
+                currentUser={currentUser}
+                portfolioData={portfolioData}
+                certificates={certificates}
+                activities={activities}
+                onBack={() => setActiveSubTab('portfolio')}
+              />
+            </div>
+          </div>
         )}
       </AnimatePresence>
 

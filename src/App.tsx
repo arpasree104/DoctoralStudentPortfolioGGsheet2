@@ -1113,15 +1113,11 @@ export default function App() {
         </div>
 
         {/* Tab contents transition container */}
-        <div className="no-print">
+        <div className="print-content-wrapper">
           <AnimatePresence mode="wait">
             {activeTab === 'dashboard' && (
-              <motion.div
+              <div
                 key="dashboard"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
               >
                 <Dashboard
                   currentUser={currentUser}
@@ -1141,16 +1137,12 @@ export default function App() {
                   allStudents={users}
                   onNavigate={(tab) => setActiveTab(tab)}
                 />
-              </motion.div>
+              </div>
             )}
 
             {activeTab === 'info' && (
-              <motion.div
+              <div
                 key="info"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
               >
                 <StudentInformation
                   currentUser={currentUser}
@@ -1163,16 +1155,12 @@ export default function App() {
                   onDeleteCertificate={handleDeleteCertificate}
                   onDeleteActivity={handleDeleteActivity}
                 />
-              </motion.div>
+              </div>
             )}
 
             {activeTab === 'edit' && currentUser.Role === 'STUDENT' && studentPortfolio && (
-              <motion.div
+              <div
                 key="edit"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
               >
                 <EditPortfolio
                   currentUser={currentUser}
@@ -1181,16 +1169,12 @@ export default function App() {
                   configOptions={configOptions}
                   certificates={certificates}
                 />
-              </motion.div>
+              </div>
             )}
 
             {activeTab === 'advisor' && ['ADVISOR', 'CO_ADVISOR', 'SUPER_ADVISOR'].includes(currentUser.Role) && (
-              <motion.div
+              <div
                 key="advisor"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
               >
                 <AdvisorPanel
                   currentUser={currentUser}
@@ -1200,16 +1184,12 @@ export default function App() {
                   onVerifyCertificate={handleVerifyCertificate}
                   onVerifyActivity={handleVerifyActivity}
                 />
-              </motion.div>
+              </div>
             )}
 
             {activeTab === 'admin' && ['ADMIN', 'SUPER_ADVISOR'].includes(currentUser.Role) && (
-              <motion.div
+              <div
                 key="admin"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
               >
                 <AdminPanel
                   currentUser={currentUser}
@@ -1220,35 +1200,27 @@ export default function App() {
                   onAddConfigOption={handleSaveConfig}
                   onDeleteConfigOption={handleDeleteConfig}
                 />
-              </motion.div>
+              </div>
             )}
 
             {activeTab === 'chat' && (
-              <motion.div
+              <div
                 key="chat"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
               >
                 <AdvisoryChat
                   currentUser={currentUser}
                   allUsers={users}
                   onRefreshDB={loadDatabase}
                 />
-              </motion.div>
+              </div>
             )}
 
             {activeTab === 'help' && currentUser.Role === 'ADMIN' && (
-              <motion.div
+              <div
                 key="help"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.2 }}
               >
                 <AppsScriptHelp />
-              </motion.div>
+              </div>
             )}
           </AnimatePresence>
         </div>
@@ -1277,10 +1249,7 @@ export default function App() {
       {/* Floating Progress Indicators */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2 no-print">
         {syncStatus !== 'idle' && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+          <div
             className={`px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 text-xs font-bold border transition duration-250 ${
               syncStatus === 'syncing' ? 'bg-[#FAF6EC] text-amber-700 border-amber-200' :
               syncStatus === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
@@ -1299,14 +1268,11 @@ export default function App() {
                syncStatus === 'success' ? 'ดึงข้อมูลสำเร็จ' :
                'ดึงข้อมูลล้มเหลว'}
             </span>
-          </motion.div>
+          </div>
         )}
 
         {saveStatus !== 'idle' && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+          <div
             className={`px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 text-xs font-bold border transition duration-250 ${
               saveStatus === 'saving' ? 'bg-blue-50 text-blue-700 border-blue-200' :
               saveStatus === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
@@ -1325,7 +1291,7 @@ export default function App() {
                saveStatus === 'success' ? 'บันทึกข้อมูลสำเร็จ' :
                'บันทึกข้อมูลล้มเหลว'}
             </span>
-          </motion.div>
+          </div>
         )}
       </div>
 
