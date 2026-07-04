@@ -18,7 +18,7 @@ import { User, UserRole, Certificate, Activity, ConfigOption, StudentPortfolioDa
 import {
   initializeDatabase, getUsers, saveUser, deleteUser, getCertificates,
   saveCertificate, deleteCertificate, getActivities, saveActivity, deleteActivity, getConfigOptions,
-  saveConfigOption, deleteConfigOption, getStudentPortfolio, saveStudentPortfolio,
+  saveConfigOption, deleteConfigOption, getAllPortfolios, getStudentPortfolio, saveStudentPortfolio,
   getAppsScriptUrl, setAppsScriptUrl, logActivity, resolvePhotoUrl
 } from './lib/googleSheets';
 
@@ -42,11 +42,13 @@ export default function App() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [configOptions, setConfigOptions] = useState<ConfigOption[]>([]);
   const [studentPortfolio, setStudentPortfolio] = useState<StudentPortfolioData | null>(null);
+  const [allPortfolios, setAllPortfolios] = useState<{studentId: string, portfolio: StudentPortfolioData}[]>([]);
   const [apiUrl, setApiUrl] = useState('');
   const [showUrlConfig, setShowUrlConfig] = useState(false);
 
   // UI States
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [targetSection, setTargetSection] = useState<number | null>(null);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState(''); // dummy for login simulation
   const [loginError, setLoginError] = useState('');
@@ -91,6 +93,10 @@ export default function App() {
         const port = await getStudentPortfolio(currentUser.StudentID || '6601010024');
         setStudentPortfolio(port);
       } else if (fetchedUsers.length > 0 && currentUser) {
+        if (currentUser.Role === 'ADVISOR' || currentUser.Role === 'ADMIN' || currentUser.Role === 'SUPER_ADVISOR' || currentUser.Role === 'CO_ADVISOR') {
+          const allP = await getAllPortfolios();
+          setAllPortfolios(allP);
+        }
         // Find fresh copy of currentUser in DB
         const freshUser = fetchedUsers.find(u => u.UserID === currentUser.UserID);
         if (freshUser) {
@@ -1004,7 +1010,7 @@ export default function App() {
         {/* Nav Tabs Bar - Hidden during print */}
         <div className="no-print flex flex-wrap gap-2 border-b border-gray-100 pb-3">
           <button
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => { setActiveTab('dashboard'); setTargetSection(null); }}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
               activeTab === 'dashboard'
                 ? 'bg-tu-red text-white shadow-sm'
@@ -1017,7 +1023,7 @@ export default function App() {
 
           {['STUDENT', 'ADVISOR', 'CO_ADVISOR', 'SUPER_ADVISOR', 'ADMIN'].includes(currentUser.Role) && (
             <button
-              onClick={() => setActiveTab('info')}
+              onClick={() => { setActiveTab('info'); setTargetSection(null); }}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                 activeTab === 'info'
                   ? 'bg-tu-red text-white shadow-sm'
@@ -1031,7 +1037,7 @@ export default function App() {
 
           {currentUser.Role === 'STUDENT' && (
             <button
-              onClick={() => setActiveTab('edit')}
+              onClick={() => { setActiveTab('edit'); setTargetSection(null); }}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                 activeTab === 'edit'
                   ? 'bg-tu-red text-white shadow-sm'
@@ -1123,6 +1129,7 @@ export default function App() {
                   currentUser={currentUser}
                   certificates={certificates}
                   activities={activities}
+                  allPortfolios={allPortfolios}
                   portfolioData={studentPortfolio || {
                     academicBackground: [], professionalBackground: [], milestones: [],
                     englishTest: { testName: '', dateTaken: '', scoreAchieved: '', requiredScore: '', status: '', evidence: '' },
@@ -1135,7 +1142,10 @@ export default function App() {
                     advisorComments: '', endorsements: []
                   }}
                   allStudents={users}
-                  onNavigate={(tab) => setActiveTab(tab)}
+                  onNavigate={(tab, sectionId) => {
+                    setActiveTab(tab);
+                    setTargetSection(sectionId || null);
+                  }}
                 />
               </div>
             )}
@@ -1168,6 +1178,7 @@ export default function App() {
                   onSavePortfolio={handleSavePortfolio}
                   configOptions={configOptions}
                   certificates={certificates}
+                  initialSection={targetSection}
                 />
               </div>
             )}

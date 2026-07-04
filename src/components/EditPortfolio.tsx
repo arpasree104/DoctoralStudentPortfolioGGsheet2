@@ -21,6 +21,7 @@ interface EditPortfolioProps {
   onSavePortfolio: (data: StudentPortfolioData) => Promise<void>;
   configOptions: ConfigOption[];
   certificates: Certificate[];
+  initialSection?: number | null;
 }
 
 export default function EditPortfolio({
