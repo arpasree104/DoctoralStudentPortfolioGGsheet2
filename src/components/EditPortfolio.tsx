@@ -164,12 +164,7 @@ export default function EditPortfolio({
     });
   };
 
-  const addCompletedCourse = () => {
-    setFormData({
-      ...formData,
-      completedCourses: [...formData.completedCourses, { code: '', title: '', semester: '', credits: '', grade: '' }]
-    });
-  };
+
 
   const addKeyLearning = () => {
     setFormData({
@@ -1201,179 +1196,88 @@ export default function EditPortfolio({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-gray-700">4.1 Courses Completed</h3>
-                <button
-                  onClick={addCompletedCourse}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-gray-50 hover:bg-red-50 hover:text-tu-red text-gray-600 rounded-lg text-xs font-semibold transition cursor-pointer"
-                >
-                  <Plus size={12} />
-                  Add Course Completed Row
-                </button>
               </div>
 
               {isReadOnly ? (
-      <ReadOnlyTable data={formData.completedCourses || []} columns={[
-        { header: 'Semester / Year', key: 'semester' },
-        { header: 'Course Code', key: 'code' },
-        { header: 'Course Title', key: 'title' },
-        { header: 'Grade', key: 'grade' },
-        { header: 'Credits', key: 'credits' }
-      ]} />
+      <ReadOnlyTable 
+        data={(formData.programCourses || []).filter(c => c.status === 'Completed').map(pc => ({
+          semester: pc.semester,
+          code: pc.code,
+          title: pc.title,
+          credits: pc.credits,
+          grade: formData.completedCourses?.find(cc => cc.code === pc.code)?.grade || ''
+        }))} 
+        columns={[
+          { header: 'Semester / Year', key: 'semester' },
+          { header: 'Course Code', key: 'code' },
+          { header: 'Course Title', key: 'title' },
+          { header: 'Grade', key: 'grade' },
+          { header: 'Credits', key: 'credits' }
+        ]} 
+      />
     ) : (
-      formData.completedCourses.map((course, idx) => {
-                const standardCourses = configOptions
-                  .filter(c => c.OptionType.trim() === 'COURSE')
-                  .map(c => {
-                    const parts = c.OptionValue.split(': ');
-                    const code = parts[0] || '';
-                    const title = parts.slice(1).join(': ') || '';
-                    return { code, title };
-                  });
-
-                return (
-                  <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-5 gap-4">
-                    <button
-                      onClick={() => {
-                        const updated = formData.completedCourses.filter((_, i) => i !== idx);
-                        setFormData({ ...formData, completedCourses: updated });
-                      }}
-                      className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition cursor-pointer font-bold"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-
-                    <div>
-                      <label className="text-[10px] font-bold text-gray-400 block mb-1">Course Code</label>
-                      <select
-                        value={standardCourses.some(sc => sc.code === course.code) ? course.code : (course.code ? 'custom' : '')}
-                        onChange={e => {
-                          const val = e.target.value;
-                          const updated = [...formData.completedCourses];
-                          if (val === 'custom') {
-                            updated[idx].code = '';
-                          } else {
-                            const matched = standardCourses.find(sc => sc.code === val);
-                            if (matched) {
-                              updated[idx].code = matched.code;
-                              updated[idx].title = matched.title;
-                            } else {
-                              updated[idx].code = '';
-                            }
-                          }
-                          setFormData({ ...formData, completedCourses: updated });
-                        }}
-                        className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-mono font-bold"
-                      >
-                        <option value="">-- Select Code --</option>
-                        {standardCourses.map((c, i) => (
-                          <option key={i} value={c.code}>{c.code}</option>
-                        ))}
-                        <option value="custom">Custom / Other...</option>
-                      </select>
-                      
-                      {(!standardCourses.some(sc => sc.code === course.code) || course.code === '') && (
-                        <input
-                          type="text"
-                          value={course.code}
-                          placeholder="e.g. NS802"
-                          onChange={e => {
-                            const updated = [...formData.completedCourses];
-                            updated[idx].code = e.target.value;
-                            setFormData({ ...formData, completedCourses: updated });
-                          }}
-                          className="mt-1 w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-mono font-bold"
-                        />
-                      )}
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <label className="text-[10px] font-bold text-gray-400 block mb-1">Course Title</label>
-                      <select
-                        value={standardCourses.some(sc => sc.title === course.title) ? course.title : (course.title ? 'custom' : '')}
-                        onChange={e => {
-                          const val = e.target.value;
-                          const updated = [...formData.completedCourses];
-                          if (val === 'custom') {
-                            updated[idx].title = '';
-                          } else {
-                            const matched = standardCourses.find(sc => sc.title === val);
-                            if (matched) {
-                              updated[idx].code = matched.code;
-                              updated[idx].title = matched.title;
-                            } else {
-                              updated[idx].title = '';
-                            }
-                          }
-                          setFormData({ ...formData, completedCourses: updated });
-                        }}
-                        className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs"
-                      >
-                        <option value="">-- Select Title --</option>
-                        {standardCourses.map((c, i) => (
-                          <option key={i} value={c.title}>{c.title}</option>
-                        ))}
-                        <option value="custom">Custom / Other...</option>
-                      </select>
-                      
-                      {(!standardCourses.some(sc => sc.title === course.title) || course.title === '') && (
-                        <input
-                          type="text"
-                          value={course.title}
-                          placeholder="Course Title"
-                          onChange={e => {
-                            const updated = [...formData.completedCourses];
-                            updated[idx].title = e.target.value;
-                            setFormData({ ...formData, completedCourses: updated });
-                          }}
-                          className="mt-1 w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs"
-                        />
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold text-gray-400 block mb-1">Semester/Year</label>
-                      <input
-                        type="text"
-                        value={course.semester || ''}
-                        placeholder="e.g. 1/2025"
-                        onChange={e => {
-                          const updated = [...formData.completedCourses];
-                          updated[idx].semester = e.target.value;
-                          setFormData({ ...formData, completedCourses: updated });
-                        }}
-                        className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-mono"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold text-gray-400 block mb-1">Grade / Credits</label>
-                      <div className="flex gap-1.5">
-                        <input
-                          type="text"
-                          value={course.grade || ''}
-                          placeholder="e.g. A"
-                          onChange={e => {
-                            const updated = [...formData.completedCourses];
-                            updated[idx].grade = e.target.value;
-                            setFormData({ ...formData, completedCourses: updated });
-                          }}
-                          className="w-1/2 px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-center font-bold"
-                        />
-                        <input
-                          type="text"
-                          value={course.credits || ''}
-                          placeholder="Cr."
-                          onChange={e => {
-                            const updated = [...formData.completedCourses];
-                            updated[idx].credits = e.target.value;
-                            setFormData({ ...formData, completedCourses: updated });
-                          }}
-                          className="w-1/2 px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-center"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
+      <div className="space-y-3">
+        {(formData.programCourses || []).filter(c => c.status === 'Completed').length === 0 ? (
+          <div className="p-4 bg-gray-50 text-center rounded-xl border border-gray-100 text-gray-400 text-xs italic">
+            ไม่มีรายวิชาที่เรียนจบ (No completed courses in Program of Study).
+          </div>
+        ) : (
+          (formData.programCourses || []).filter(c => c.status === 'Completed').map((course, idx) => {
+            const existingCC = (formData.completedCourses || []).find(cc => cc.code === course.code) || { grade: '' };
+            
+            return (
+              <div key={idx} className="p-3 bg-white rounded-xl border border-gray-200 relative grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                 <div className="sm:col-span-2">
+                   <label className="text-[9px] font-bold text-gray-400 block mb-0.5">Semester/Year</label>
+                   <div className="px-2 py-1.5 bg-gray-50 border border-gray-100 rounded text-xs text-gray-600 truncate">{course.semester || '-'}</div>
+                 </div>
+                 
+                 <div className="sm:col-span-2">
+                   <label className="text-[9px] font-bold text-gray-400 block mb-0.5">Course Code</label>
+                   <div className="px-2 py-1.5 bg-gray-50 border border-gray-100 rounded text-xs font-mono font-bold text-gray-600">{course.code || '-'}</div>
+                 </div>
+                 
+                 <div className="sm:col-span-5">
+                   <label className="text-[9px] font-bold text-gray-400 block mb-0.5">Course Title</label>
+                   <div className="px-2 py-1.5 bg-gray-50 border border-gray-100 rounded text-xs text-gray-600 truncate">{course.title || '-'}</div>
+                 </div>
+                 
+                 <div className="sm:col-span-1">
+                   <label className="text-[9px] font-bold text-gray-400 block mb-0.5">Credits</label>
+                   <div className="px-2 py-1.5 bg-gray-50 border border-gray-100 rounded text-xs text-center font-mono text-gray-600">{course.credits || '-'}</div>
+                 </div>
+                 
+                 <div className="sm:col-span-2">
+                   <label className="text-[9px] font-bold text-tu-red block mb-0.5">Grade <span className="text-red-500">*</span></label>
+                   <input
+                     type="text"
+                     value={existingCC.grade || ''}
+                     placeholder="e.g. A, B+"
+                     onChange={(e) => {
+                       const val = e.target.value;
+                       let updated = [...(formData.completedCourses || [])];
+                       const ccIdx = updated.findIndex(cc => cc.code === course.code);
+                       if (ccIdx !== -1) {
+                         updated[ccIdx].grade = val;
+                       } else {
+                         updated.push({
+                           code: course.code,
+                           title: course.title,
+                           semester: course.semester,
+                           credits: course.credits,
+                           grade: val
+                         });
+                       }
+                       setFormData({ ...formData, completedCourses: updated });
+                     }}
+                     className="w-full px-2 py-1.5 bg-white border border-gray-300 rounded text-xs font-bold text-center focus:outline-tu-red"
+                   />
+                 </div>
+              </div>
+            );
+          })
+        )}
+      </div>
     )}
             </div>
 
