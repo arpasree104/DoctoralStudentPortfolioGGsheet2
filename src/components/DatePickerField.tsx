@@ -57,33 +57,50 @@ export default function DatePickerField({
   required = false,
   id
 }: DatePickerFieldProps) {
-  const [typedValue, setTypedValue] = useState(value);
-  const [warning, setWarning] = useState<string | null>(null);
-  const dateInputRef = useRef<HTMLInputElement>(null);
-
   // Format display date
   const formatDisplay = (val: string) => {
     if (!val) return '';
-    const d = new Date(val);
+    // If it's already in the target format (e.g. "15 May 2026"), just return it
+    if (val.match(/^\d{1,2}\s[a-zA-Z]+\s\d{4}$/)) {
+      return val;
+    }
+    
+    let parsedString = val;
+    if (val.includes('T')) {
+      parsedString = val.split('T')[0];
+    }
+    const d = new Date(parsedString);
     if (!isNaN(d.getTime())) {
-      return new Intl.DateTimeFormat('en-GB', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      }).format(d);
+      // Use UTC if we parsed a strict YYYY-MM-DD string to avoid timezone shifts
+      const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+      if (parsedString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        options.timeZone = 'UTC';
+      }
+      return new Intl.DateTimeFormat('en-GB', options).format(d);
     }
     return val;
   };
 
+  const [typedValue, setTypedValue] = useState(() => {
+    if (value && (value.includes('T') || value.match(/^\d{4}-\d{2}-\d{2}$/))) {
+      return formatDisplay(value);
+    }
+    return value;
+  });
+  const [warning, setWarning] = useState<string | null>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
+
   // Sync internal typed value with external state updates
   useEffect(() => {
-    if (value && value !== typedValue) {
-      // Check if it's an ISO or YYYY-MM-DD
+    if (value) {
       if (value.includes('T') || value.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        setTypedValue(formatDisplay(value));
-      } else {
+        const formatted = formatDisplay(value);
+        if (formatted !== typedValue) setTypedValue(formatted);
+      } else if (value !== typedValue) {
         setTypedValue(value);
       }
+    } else {
+      setTypedValue('');
     }
   }, [value]);
 
@@ -187,15 +204,13 @@ export default function DatePickerField({
         setWarning(null);
       }
       if (parsedYear && parsedMonth !== null && parsedDay !== null) {
-        const d = new Date(parsedYear, parsedMonth, parsedDay);
-        if (!isNaN(d.getTime())) {
-          const formatted = new Intl.DateTimeFormat('en-GB', {
-            day: 'numeric', month: 'long', year: 'numeric'
-          }).format(d);
-          setTypedValue(formatted);
-          onChange(formatted);
-          return;
-        }
+        const mm = String(parsedMonth + 1).padStart(2, '0');
+        const dd = String(parsedDay).padStart(2, '0');
+        const isoStr = `${parsedYear}-${mm}-${dd}`;
+        const formatted = formatDisplay(isoStr);
+        setTypedValue(formatted);
+        onChange(formatted);
+        return;
       }
       onChange(input);
     }
