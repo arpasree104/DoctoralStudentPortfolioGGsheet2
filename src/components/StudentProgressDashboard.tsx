@@ -38,7 +38,7 @@ export default function StudentProgressDashboard({ students, onSelectStudent }: 
   const filteredStudents = students.filter(s => {
     if (nameFilter && !s.FullName.toLowerCase().includes(nameFilter.toLowerCase())) return false;
     if (idFilter && !(s.StudentID || '').toLowerCase().includes(idFilter.toLowerCase())) return false;
-    if (yearFilter && !(s.YearOfAdmission || '').toLowerCase().includes(yearFilter.toLowerCase())) return false;
+    if (yearFilter && !String(s.YearOfAdmission || '').toLowerCase().includes(yearFilter.toLowerCase())) return false;
     return true;
   });
 
@@ -68,10 +68,19 @@ export default function StudentProgressDashboard({ students, onSelectStudent }: 
             if (prog.progress === 'Completed') return;
             if (!prog.date) return;
             
-            const [y, m] = prog.date.split('-');
-            if (y && m) {
-              const year = parseInt(y, 10);
-              const month = parseInt(m, 10);
+            let year, month;
+            if (prog.date.includes('-')) {
+              const [y, m] = prog.date.split('-');
+              year = parseInt(y, 10);
+              month = parseInt(m, 10);
+            } else {
+              const d = new Date(prog.date);
+              if (!isNaN(d.getTime())) {
+                year = d.getFullYear();
+                month = d.getMonth() + 1;
+              }
+            }
+            if (year && month) {
               if (year < currentYear || (year === currentYear && month < currentMonth)) {
                 overdue.push({
                   student: stud.FullName,
@@ -165,10 +174,19 @@ export default function StudentProgressDashboard({ students, onSelectStudent }: 
               const overdueItems = progressList.filter(prog => {
                 if (prog.progress === 'Completed') return false;
                 if (!prog.date) return false;
-                const [y, m] = prog.date.split('-');
-                if (y && m) {
-                  const year = parseInt(y, 10);
-                  const month = parseInt(m, 10);
+                let year, month;
+                if (prog.date.includes('-')) {
+                  const [y, m] = prog.date.split('-');
+                  year = parseInt(y, 10);
+                  month = parseInt(m, 10);
+                } else {
+                  const d = new Date(prog.date);
+                  if (!isNaN(d.getTime())) {
+                    year = d.getFullYear();
+                    month = d.getMonth() + 1;
+                  }
+                }
+                if (year && month) {
                   return year < currentYear || (year === currentYear && month < currentMonth);
                 }
                 return false;

@@ -138,7 +138,7 @@ export default function PrintReport({
                 </tr>
                 <tr>
                   <td className="py-2.5 font-bold text-gray-500">Date of Submission</td>
-                  <td className="py-2.5 text-gray-800">{currentUser.DateOfSubmission || 'Not specified'}</td>
+                  <td className="py-2.5 text-gray-800">{formatDisplayDate(currentUser.DateOfSubmission) || 'Not specified'}</td>
                 </tr>
               </tbody>
             </table>
@@ -219,7 +219,7 @@ export default function PrintReport({
               </div>
               <div>
                 <span className="text-gray-400 block font-medium">Date of Submission</span>
-                <span className="font-semibold text-gray-800">{currentUser.DateOfSubmission || 'N/A'}</span>
+                <span className="font-semibold text-gray-800">{formatDisplayDate(currentUser.DateOfSubmission) || 'N/A'}</span>
               </div>
               <div>
                 <span className="text-gray-400 block font-medium">Line ID</span>

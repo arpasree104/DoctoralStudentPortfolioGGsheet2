@@ -8,7 +8,7 @@ interface AdvisorDissertationViewProps {
 }
 
 export default function AdvisorDissertationView({ student, portfolio }: AdvisorDissertationViewProps) {
-  const info = portfolio.dissertationInfo || {};
+  const info: any = portfolio.dissertationInfo || {};
   const progressList = portfolio.dissertationProgress || [];
 
   return (

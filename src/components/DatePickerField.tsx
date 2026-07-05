@@ -61,9 +61,30 @@ export default function DatePickerField({
   const [warning, setWarning] = useState<string | null>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
 
+  // Format display date
+  const formatDisplay = (val: string) => {
+    if (!val) return '';
+    const d = new Date(val);
+    if (!isNaN(d.getTime())) {
+      return new Intl.DateTimeFormat('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      }).format(d);
+    }
+    return val;
+  };
+
   // Sync internal typed value with external state updates
   useEffect(() => {
-    setTypedValue(value);
+    if (value && value !== typedValue) {
+      // Check if it's an ISO or YYYY-MM-DD
+      if (value.includes('T') || value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        setTypedValue(formatDisplay(value));
+      } else {
+        setTypedValue(value);
+      }
+    }
   }, [value]);
 
   const parseAndNormalize = (input: string) => {
@@ -165,6 +186,17 @@ export default function DatePickerField({
       } else {
         setWarning(null);
       }
+      if (parsedYear && parsedMonth !== null && parsedDay !== null) {
+        const d = new Date(parsedYear, parsedMonth, parsedDay);
+        if (!isNaN(d.getTime())) {
+          const formatted = new Intl.DateTimeFormat('en-GB', {
+            day: 'numeric', month: 'long', year: 'numeric'
+          }).format(d);
+          setTypedValue(formatted);
+          onChange(formatted);
+          return;
+        }
+      }
       onChange(input);
     }
   };
@@ -205,9 +237,10 @@ export default function DatePickerField({
   const handleCalendarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedDate = e.target.value; // Guaranteed to be in YYYY-MM-DD
     if (selectedDate) {
-      setTypedValue(selectedDate);
+      const formatted = formatDisplay(selectedDate);
+      setTypedValue(formatted);
       setWarning(null);
-      onChange(selectedDate);
+      onChange(formatted); // or onChange(selectedDate) depending on storage preference
     }
   };
 
