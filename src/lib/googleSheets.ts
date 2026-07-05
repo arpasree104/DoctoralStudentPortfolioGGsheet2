@@ -1368,7 +1368,7 @@ function insertExampleData() {
 function appendObjectAsRow(sheet, headers, obj) {
   var rowValues = headers.map(function(h) {
     var val = obj[h] !== undefined ? obj[h] : "";
-    if (typeof val === 'string' && /^[123]\/\d{4}$/.test(val)) {
+    if (typeof val === 'string' && /^[123]\\/\\d{4}$/.test(val)) {
       return "'" + val; // Prevent Google Sheets from formatting as Date
     }
     return val;
