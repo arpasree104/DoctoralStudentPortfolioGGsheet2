@@ -68,7 +68,8 @@ export default function Dashboard({
         </div>
 
         {/* Admin Widgets */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+
           <div className="bg-white p-5 rounded-2xl shadow-xs border border-gray-100 flex items-center space-x-4">
             <div className="p-3 bg-red-50 text-tu-red rounded-xl">
               <Users size={24} />
@@ -85,7 +86,17 @@ export default function Dashboard({
             </div>
             <div>
               <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Total Advisors</p>
-              <h3 className="text-2xl font-bold text-gray-900">{allStudents.filter(s => s.Role === 'ADVISOR').length} Advisors</h3>
+              <h3 className="text-2xl font-bold text-gray-900">{allStudents.filter(s => s.Role === 'ADVISOR' || s.Role === 'SUPER_ADVISOR').length} Advisors</h3>
+            </div>
+          </div>
+
+          <div className="bg-white p-5 rounded-2xl shadow-xs border border-gray-100 flex items-center space-x-4">
+            <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+              <Users size={24} />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Co-Advisors</p>
+              <h3 className="text-2xl font-bold text-gray-900">{allStudents.filter(s => s.Role === 'CO_ADVISOR').length} Co-Advisors</h3>
             </div>
           </div>
 

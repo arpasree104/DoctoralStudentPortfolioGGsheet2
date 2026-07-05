@@ -200,6 +200,8 @@ export default function StudentProgressDashboard({ students, onSelectStudent }: 
                 // "ถ้าอันไหนยังไม่ Completed แต่ยังไม่ถึงเวลาที่กำหนดไม่ต้องนำมาแสดง"
                 latestProgress = null; 
               }
+              
+              const hasProgress = progressList.length > 0;
 
               return (
                 <tr key={stud.UserID} className="hover:bg-red-50/20 transition-colors cursor-pointer" onClick={() => onSelectStudent && onSelectStudent(stud)}>
@@ -212,10 +214,12 @@ export default function StudentProgressDashboard({ students, onSelectStudent }: 
                       <span className="text-sm font-bold text-red-600 flex items-center gap-1">
                          <AlertCircle size={14} /> {latestProgress.activity}
                       </span>
-                    ) : (
+                    ) : hasProgress ? (
                       <span className="text-sm text-emerald-600 font-medium flex items-center gap-1">
                          <CheckCircle size={14} /> On Track (No overdue tasks)
                       </span>
+                    ) : (
+                      <span className="text-sm text-gray-400 italic">No data recorded yet</span>
                     )}
                   </td>
                   <td className="py-3 px-4">

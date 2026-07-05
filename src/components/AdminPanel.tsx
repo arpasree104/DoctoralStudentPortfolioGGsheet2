@@ -325,7 +325,7 @@ export default function AdminPanel({
                             className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl"
                           >
                             <option value="">Select Advisor...</option>
-                            {configOptions.filter(c => c.OptionType === 'ADVISOR').map(c => (
+                            {configOptions.filter(c => c.OptionType.trim() === 'ADVISOR').map(c => (
                               <option key={c.id} value={c.OptionValue}>{c.OptionValue}</option>
                             ))}
                           </select>
@@ -338,7 +338,7 @@ export default function AdminPanel({
                             className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl"
                           >
                             <option value="">Select Co-Advisor...</option>
-                            {configOptions.filter(c => c.OptionType === 'CO_ADVISOR').map(c => (
+                            {configOptions.filter(c => c.OptionType.trim() === 'CO_ADVISOR').map(c => (
                               <option key={c.id} value={c.OptionValue}>{c.OptionValue}</option>
                             ))}
                           </select>
@@ -445,7 +445,7 @@ export default function AdminPanel({
                           >
                             <option value="">Select Major Advisor...</option>
                             {/* Option 1: From configs */}
-                            {configOptions.filter(c => c.OptionType === 'ADVISOR').map(c => (
+                            {configOptions.filter(c => c.OptionType.trim() === 'ADVISOR').map(c => (
                               <option key={c.id} value={c.OptionValue}>{c.OptionValue}</option>
                             ))}
                             {/* Option 2: From advisors users */}
@@ -463,7 +463,7 @@ export default function AdminPanel({
                           >
                             <option value="">Select Co-Advisor...</option>
                             {/* Option 1: From configs */}
-                            {configOptions.filter(c => c.OptionType === 'CO_ADVISOR').map(c => (
+                            {configOptions.filter(c => c.OptionType.trim() === 'CO_ADVISOR').map(c => (
                               <option key={c.id} value={c.OptionValue}>{c.OptionValue}</option>
                             ))}
                             {/* Option 2: From co-advisor users */}
@@ -603,7 +603,7 @@ export default function AdminPanel({
                     </span>
                     <ul className="space-y-1.5">
                       {configOptions
-                        .filter(c => c.OptionType === type)
+                        .filter(c => c.OptionType.trim() === type)
                         .map((opt) => (
                           <li key={opt.id} className="text-xs flex items-center justify-between text-gray-700 bg-white px-2 py-1.5 rounded-lg border border-gray-100/50">
                             <span className="truncate">{opt.OptionValue}</span>

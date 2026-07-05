@@ -1136,7 +1136,7 @@ export default function EditPortfolio({
     ) : (
       formData.completedCourses.map((course, idx) => {
                 const standardCourses = configOptions
-                  .filter(c => c.OptionType === 'COURSE')
+                  .filter(c => c.OptionType.trim() === 'COURSE')
                   .map(c => {
                     const parts = c.OptionValue.split(': ');
                     const code = parts[0] || '';
@@ -1739,7 +1739,7 @@ export default function EditPortfolio({
                       className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold"
                     >
                       <option value="">-- Select Activity --</option>
-                      {configOptions.filter(o => o.OptionType === 'ProgressActivity').map(opt => (
+                      {configOptions.filter(o => o.OptionType.trim() === 'ProgressActivity').map(opt => (
                         <option key={opt.id} value={opt.OptionValue}>{opt.OptionValue}</option>
                       ))}
                     </select>

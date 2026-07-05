@@ -293,7 +293,7 @@ export async function getChats(studentId?: string): Promise<ChatMessage[]> {
   const scriptUrl = getAppsScriptUrl();
   if (scriptUrl) {
     try {
-      const res = await fetch(`${scriptUrl}?type=chats`);
+      const res = await fetch(`${scriptUrl}?t=${new Date().getTime()}&type=chats`);
       if (res.ok) {
         const data = await res.json();
         localStorage.setItem(KEYS.CHATS, JSON.stringify(data));
@@ -340,7 +340,7 @@ export async function getNotifications(studentId?: string): Promise<Notification
   const scriptUrl = getAppsScriptUrl();
   if (scriptUrl) {
     try {
-      const res = await fetch(`${scriptUrl}?type=notifications`);
+      const res = await fetch(`${scriptUrl}?t=${new Date().getTime()}&type=notifications`);
       if (res.ok) {
         const data = await res.json();
         localStorage.setItem(KEYS.NOTIFICATIONS, JSON.stringify(data));
@@ -433,7 +433,7 @@ export async function getUsers(): Promise<User[]> {
   let rawUsers: any[] = [];
   if (scriptUrl) {
     try {
-      const res = await fetch(`${scriptUrl}?type=users`);
+      const res = await fetch(`${scriptUrl}?t=${new Date().getTime()}&type=users`);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -552,7 +552,7 @@ export async function getCertificates(): Promise<Certificate[]> {
   const scriptUrl = getAppsScriptUrl();
   if (scriptUrl) {
     try {
-      const res = await fetch(`${scriptUrl}?type=certificates`);
+      const res = await fetch(`${scriptUrl}?t=${new Date().getTime()}&type=certificates`);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -618,7 +618,7 @@ export async function getActivities(): Promise<Activity[]> {
   const scriptUrl = getAppsScriptUrl();
   if (scriptUrl) {
     try {
-      const res = await fetch(`${scriptUrl}?type=activities`);
+      const res = await fetch(`${scriptUrl}?t=${new Date().getTime()}&type=activities`);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -684,7 +684,7 @@ export async function getConfigOptions(): Promise<ConfigOption[]> {
   const scriptUrl = getAppsScriptUrl();
   if (scriptUrl) {
     try {
-      const res = await fetch(`${scriptUrl}?type=configOptions`);
+      const res = await fetch(`${scriptUrl}?t=${new Date().getTime()}&type=configOptions`);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -785,7 +785,7 @@ export async function getStudentPortfolio(studentId: string): Promise<StudentPor
   const scriptUrl = getAppsScriptUrl();
   if (scriptUrl) {
     try {
-      const res = await fetch(`${scriptUrl}?type=portfolio&studentId=${studentId}`);
+      const res = await fetch(`${scriptUrl}?t=${new Date().getTime()}&type=portfolio&studentId=${studentId}`);
       if (res.ok) {
         const data = await res.json();
         if (data && !data.error) {

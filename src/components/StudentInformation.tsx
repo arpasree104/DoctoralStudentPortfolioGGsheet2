@@ -141,10 +141,10 @@ export default function StudentInformation({
   }, [currentUser]);
 
   // Filter dynamic dropdown list options from dynamic ConfigOptions
-  const advisorOptions = configOptions.filter(c => c.OptionType === 'ADVISOR').map(c => c.OptionValue);
-  const coAdvisorOptions = configOptions.filter(c => c.OptionType === 'CO_ADVISOR').map(c => c.OptionValue);
-  const certCategoryOptions = configOptions.filter(c => c.OptionType === 'CERT_CATEGORY').map(c => c.OptionValue);
-  const degreeOptions = configOptions.filter(c => c.OptionType === 'DEGREE').map(c => c.OptionValue);
+  const advisorOptions = configOptions.filter(c => c.OptionType.trim() === 'ADVISOR').map(c => c.OptionValue);
+  const coAdvisorOptions = configOptions.filter(c => c.OptionType.trim() === 'CO_ADVISOR').map(c => c.OptionValue);
+  const certCategoryOptions = configOptions.filter(c => c.OptionType.trim() === 'CERT_CATEGORY').map(c => c.OptionValue);
+  const degreeOptions = configOptions.filter(c => c.OptionType.trim() === 'DEGREE').map(c => c.OptionValue);
 
   // Profile save
   const handleSaveProfile = async (e: React.FormEvent) => {
