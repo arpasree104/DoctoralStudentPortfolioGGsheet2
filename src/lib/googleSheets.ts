@@ -1217,7 +1217,7 @@ function getOrCreateSheet(sheetName) {
       "Chats": ["MessageID", "SenderID", "SenderName", "ReceiverID", "MessageText", "Timestamp", "Attachment", "AttachmentName"],
       "Notifications": ["NotificationID", "SenderID", "SenderName", "ReceiverID", "Title", "MessageText", "Timestamp", "IsRead"],
       "P1_StudentProfile": ["StudentID", "RecordType", "Degree", "Field", "Institution", "Year", "Period", "Role", "Remarks", "LastUpdated"],
-      "P2_Milestones": ["StudentID", "MilestoneKey", "MilestoneLabel", "PlannedDate", "ActualDate", "Remarks", "Status", "LastUpdated"],
+      "P2_Milestones": ["StudentID", "MilestoneKey", "MilestoneLabel_CourseTitle_Competency", "PlannedDate_Semester_TargetDate", "ActualDate_CourseCode_Activities", "Remarks_Credits_Description", "Status", "LastUpdated"],
       "P3_EnglishLanguage": ["StudentID", "RecordType", "TestName", "DateTaken", "ScoreAchieved", "RequiredScore", "TestStatus", "TestEvidence", "ActivityDate", "ActivityName", "ActivityOrganizer", "ActivityDescription", "ActivityEvidence", "EnglishReflection", "VerificationComments", "VerificationName", "VerificationDate", "LastUpdated"],
       "P4_Coursework": ["StudentID", "RecordType", "CourseCode", "CourseTitle", "Semester", "Credits", "Grade", "WorkshopDate", "WorkshopTitle", "WorkshopOrganizer", "WorkshopRole", "WorkshopKeyLearning", "LastUpdated"],
       "P5_Dissertation": ["StudentID", "RecordType", "InfoTitle", "InfoBackground", "InfoProblem", "InfoObjectives", "InfoHypotheses", "InfoConceptualFramework", "InfoMethodology", "InfoResearchTopic", "ProgressActivity", "ProgressDate", "ProgressDetails", "ProgressEvidence", "MeetingDate", "MeetingPersons", "MeetingIssues", "MeetingActionPoints", "LastUpdated", "ProgressObstacles"],
@@ -1254,7 +1254,7 @@ function setupDatabase() {
     "Chats": ["MessageID", "SenderID", "SenderName", "ReceiverID", "MessageText", "Timestamp", "Attachment", "AttachmentName"],
     "Notifications": ["NotificationID", "SenderID", "SenderName", "ReceiverID", "Title", "MessageText", "Timestamp", "IsRead"],
     "P1_StudentProfile": ["StudentID", "RecordType", "Degree", "Field", "Institution", "Year", "Period", "Role", "Remarks", "LastUpdated"],
-    "P2_Milestones": ["StudentID", "MilestoneKey", "MilestoneLabel", "PlannedDate", "ActualDate", "Remarks", "Status", "LastUpdated"],
+    "P2_Milestones": ["StudentID", "MilestoneKey", "MilestoneLabel_CourseTitle_Competency", "PlannedDate_Semester_TargetDate", "ActualDate_CourseCode_Activities", "Remarks_Credits_Description", "Status", "LastUpdated"],
     "P3_EnglishLanguage": ["StudentID", "RecordType", "TestName", "DateTaken", "ScoreAchieved", "RequiredScore", "TestStatus", "TestEvidence", "ActivityDate", "ActivityName", "ActivityOrganizer", "ActivityDescription", "ActivityEvidence", "EnglishReflection", "VerificationComments", "VerificationName", "VerificationDate", "LastUpdated"],
     "P4_Coursework": ["StudentID", "RecordType", "CourseCode", "CourseTitle", "Semester", "Credits", "Grade", "WorkshopDate", "WorkshopTitle", "WorkshopOrganizer", "WorkshopRole", "WorkshopKeyLearning", "LastUpdated"],
     "P5_Dissertation": ["StudentID", "RecordType", "InfoTitle", "InfoBackground", "InfoProblem", "InfoObjectives", "InfoHypotheses", "InfoConceptualFramework", "InfoMethodology", "InfoResearchTopic", "ProgressActivity", "ProgressDate", "ProgressDetails", "ProgressEvidence", "MeetingDate", "MeetingPersons", "MeetingIssues", "MeetingActionPoints", "LastUpdated", "ProgressObstacles"],
@@ -1367,7 +1367,11 @@ function insertExampleData() {
 
 function appendObjectAsRow(sheet, headers, obj) {
   var rowValues = headers.map(function(h) {
-    return obj[h] !== undefined ? obj[h] : "";
+    var val = obj[h] !== undefined ? obj[h] : "";
+    if (typeof val === 'string' && /^[123]\/\d{4}$/.test(val)) {
+      return "'" + val; // Prevent Google Sheets from formatting as Date
+    }
+    return val;
   });
   sheet.appendRow(rowValues);
 }
@@ -1434,13 +1438,17 @@ function loadPortfolioFromSheets(studentId) {
   var defaultPort = getDefaultPortfolio(studentId);
   var portfolio = JSON.parse(JSON.stringify(defaultPort)); // Clone default
 
-  function formatDate(val) {
+  function formatDate(val, isSemester) {
     if (!val) return "";
     if (val instanceof Date) {
       var y = val.getFullYear();
-      var m = ("0" + (val.getMonth() + 1)).slice(-2);
+      var m = val.getMonth() + 1;
+      if (isSemester) {
+        return m + "/" + y;
+      }
+      var strM = ("0" + m).slice(-2);
       var d = ("0" + val.getDate()).slice(-2);
-      return y + "-" + m + "-" + d;
+      return y + "-" + strM + "-" + d;
     }
     return String(val).trim();
   }
@@ -1477,7 +1485,7 @@ function loadPortfolioFromSheets(studentId) {
             portfolio.professionalBackground.push({
               period: r.Period || "",
               role: r.Role || "",
-              remarks: r.Remarks || ""
+              remarks: (r.Remarks_Credits_Description || r.Remarks) || ""
             });
           }
         }
@@ -1502,27 +1510,27 @@ function loadPortfolioFromSheets(studentId) {
             progName = r.Status || "ชุด 1";
           } else if (key.indexOf("program_course_") === 0) {
             progCourses.push({
-              semester: formatDate(r.PlannedDate),
-              code: formatDate(r.ActualDate),
-              title: r.MilestoneLabel || "",
-              credits: r.Remarks || "",
+              semester: formatDate((r.PlannedDate_Semester_TargetDate || r.PlannedDate), true),
+              code: formatDate((r.ActualDate_CourseCode_Activities || r.ActualDate)),
+              title: (r.MilestoneLabel_CourseTitle_Competency || r.MilestoneLabel) || "",
+              credits: (r.Remarks_Credits_Description || r.Remarks) || "",
               status: r.Status || "Not Started"
             });
           } else if (key.indexOf("learning_plan_") === 0) {
             lPlans.push({
-              competency: r.MilestoneLabel || "",
-              description: r.Remarks || "",
-              targetDate: formatDate(r.PlannedDate),
+              competency: (r.MilestoneLabel_CourseTitle_Competency || r.MilestoneLabel) || "",
+              description: (r.Remarks_Credits_Description || r.Remarks) || "",
+              targetDate: formatDate((r.PlannedDate_Semester_TargetDate || r.PlannedDate)),
               status: r.Status || "Not Started",
-              activities: r.ActualDate || ""
+              activities: (r.ActualDate_CourseCode_Activities || r.ActualDate) || ""
             });
           } else {
             standardMilestones.push({
               key: key,
-              label: r.MilestoneLabel || "",
-              plannedDate: formatDate(r.PlannedDate),
-              actualDate: formatDate(r.ActualDate),
-              remarks: r.Remarks || "",
+              label: (r.MilestoneLabel_CourseTitle_Competency || r.MilestoneLabel) || "",
+              plannedDate: formatDate((r.PlannedDate_Semester_TargetDate || r.PlannedDate)),
+              actualDate: formatDate((r.ActualDate_CourseCode_Activities || r.ActualDate)),
+              remarks: (r.Remarks_Credits_Description || r.Remarks) || "",
               status: r.Status || ""
             });
           }
@@ -1593,7 +1601,7 @@ function loadPortfolioFromSheets(studentId) {
             portfolio.completedCourses.push({
               code: r.CourseCode || "",
               title: r.CourseTitle || "",
-              semester: r.Semester || "",
+              semester: formatDate(r.Semester, true) || "",
               credits: String(r.Credits || ""),
               grade: r.Grade || ""
             });
@@ -1750,7 +1758,7 @@ function loadPortfolioFromSheets(studentId) {
           var r = rows[i];
           if (r.RecordType === "TEACHING") {
             portfolio.teachingExperiences.push({
-              semester: r.TeachSemester || "",
+              semester: formatDate(r.TeachSemester, true) || "",
               course: r.TeachCourse || "",
               role: r.TeachRole || "",
               studentLevel: r.TeachStudentLevel || "",
@@ -1923,13 +1931,17 @@ function savePortfolioToSheets(studentId, portfolio) {
   var ss = getSpreadsheet();
   var nowStr = new Date().toISOString();
 
-  function formatDate(val) {
+  function formatDate(val, isSemester) {
     if (!val) return "";
     if (val instanceof Date) {
       var y = val.getFullYear();
-      var m = ("0" + (val.getMonth() + 1)).slice(-2);
+      var m = val.getMonth() + 1;
+      if (isSemester) {
+        return m + "/" + y;
+      }
+      var strM = ("0" + m).slice(-2);
       var d = ("0" + val.getDate()).slice(-2);
-      return y + "-" + m + "-" + d;
+      return y + "-" + strM + "-" + d;
     }
     return String(val).trim();
   }
@@ -1949,7 +1961,7 @@ function savePortfolioToSheets(studentId, portfolio) {
     for (var i = 0; i < prs.length; i++) {
       var pr = prs[i];
       appendObjectAsRow(s1, ["StudentID", "RecordType", "Degree", "Field", "Institution", "Year", "Period", "Role", "Remarks", "LastUpdated"], {
-        StudentID: studentId, RecordType: "PROFESSIONAL", Period: pr.period, Role: pr.role, Remarks: pr.remarks, LastUpdated: nowStr
+        StudentID: studentId, RecordType: "PROFESSIONAL", Period: pr.period, Role: pr.role, Remarks_Credits_Description: pr.remarks, LastUpdated: nowStr
       });
     }
   }
@@ -1963,22 +1975,22 @@ function savePortfolioToSheets(studentId, portfolio) {
     var ms = portfolio.milestones || [];
     for (var i = 0; i < ms.length; i++) {
       var m = ms[i];
-      appendObjectAsRow(s2, ["StudentID", "MilestoneKey", "MilestoneLabel", "PlannedDate", "ActualDate", "Remarks", "Status", "LastUpdated"], {
-        StudentID: studentId, MilestoneKey: m.key, MilestoneLabel: m.label, PlannedDate: formatDate(m.plannedDate), ActualDate: formatDate(m.actualDate), Remarks: m.remarks, Status: m.status, LastUpdated: nowStr
+      appendObjectAsRow(s2, ["StudentID", "MilestoneKey", "MilestoneLabel_CourseTitle_Competency", "PlannedDate_Semester_TargetDate", "ActualDate_CourseCode_Activities", "Remarks_Credits_Description", "Status", "LastUpdated"], {
+        StudentID: studentId, MilestoneKey: m.key, MilestoneLabel_CourseTitle_Competency: m.label, PlannedDate_Semester_TargetDate: formatDate(m.plannedDate), ActualDate_CourseCode_Activities: formatDate(m.actualDate), Remarks_Credits_Description: m.remarks, Status: m.status, LastUpdated: nowStr
       });
     }
 
     // Save Program of Study Name
-    appendObjectAsRow(s2, ["StudentID", "MilestoneKey", "MilestoneLabel", "PlannedDate", "ActualDate", "Remarks", "Status", "LastUpdated"], {
-      StudentID: studentId, MilestoneKey: "program_of_study_name", MilestoneLabel: "Program of Study Name", PlannedDate: "", ActualDate: "", Remarks: "", Status: portfolio.programOfStudyName || "ชุด 1", LastUpdated: nowStr
+    appendObjectAsRow(s2, ["StudentID", "MilestoneKey", "MilestoneLabel_CourseTitle_Competency", "PlannedDate_Semester_TargetDate", "ActualDate_CourseCode_Activities", "Remarks_Credits_Description", "Status", "LastUpdated"], {
+      StudentID: studentId, MilestoneKey: "program_of_study_name", MilestoneLabel_CourseTitle_Competency: "Program of Study Name", PlannedDate_Semester_TargetDate: "", ActualDate_CourseCode_Activities: "", Remarks_Credits_Description: "", Status: portfolio.programOfStudyName || "ชุด 1", LastUpdated: nowStr
     });
 
     // Save Program Courses
     var pcs = portfolio.programCourses || [];
     for (var i = 0; i < pcs.length; i++) {
       var pc = pcs[i];
-      appendObjectAsRow(s2, ["StudentID", "MilestoneKey", "MilestoneLabel", "PlannedDate", "ActualDate", "Remarks", "Status", "LastUpdated"], {
-        StudentID: studentId, MilestoneKey: "program_course_" + i, MilestoneLabel: pc.title, PlannedDate: pc.semester, ActualDate: pc.code, Remarks: pc.credits, Status: pc.status, LastUpdated: nowStr
+      appendObjectAsRow(s2, ["StudentID", "MilestoneKey", "MilestoneLabel_CourseTitle_Competency", "PlannedDate_Semester_TargetDate", "ActualDate_CourseCode_Activities", "Remarks_Credits_Description", "Status", "LastUpdated"], {
+        StudentID: studentId, MilestoneKey: "program_course_" + i, MilestoneLabel_CourseTitle_Competency: pc.title, PlannedDate_Semester_TargetDate: pc.semester, ActualDate_CourseCode_Activities: pc.code, Remarks_Credits_Description: pc.credits, Status: pc.status, LastUpdated: nowStr
       });
     }
 
@@ -1986,8 +1998,8 @@ function savePortfolioToSheets(studentId, portfolio) {
     var lps = portfolio.learningPlans || [];
     for (var i = 0; i < lps.length; i++) {
       var lp = lps[i];
-      appendObjectAsRow(s2, ["StudentID", "MilestoneKey", "MilestoneLabel", "PlannedDate", "ActualDate", "Remarks", "Status", "LastUpdated"], {
-        StudentID: studentId, MilestoneKey: "learning_plan_" + i, MilestoneLabel: lp.competency, PlannedDate: lp.targetDate, ActualDate: lp.activities, Remarks: lp.description, Status: lp.status, LastUpdated: nowStr
+      appendObjectAsRow(s2, ["StudentID", "MilestoneKey", "MilestoneLabel_CourseTitle_Competency", "PlannedDate_Semester_TargetDate", "ActualDate_CourseCode_Activities", "Remarks_Credits_Description", "Status", "LastUpdated"], {
+        StudentID: studentId, MilestoneKey: "learning_plan_" + i, MilestoneLabel_CourseTitle_Competency: lp.competency, PlannedDate_Semester_TargetDate: lp.targetDate, ActualDate_CourseCode_Activities: lp.activities, Remarks_Credits_Description: lp.description, Status: lp.status, LastUpdated: nowStr
       });
     }
   }
@@ -2206,7 +2218,7 @@ function savePortfolioToSheets(studentId, portfolio) {
     for (var i = 0; i < comps.length; i++) {
       var c = comps[i];
       appendObjectAsRow(s12, ["StudentID", "CompetencyName", "CompetencyRating", "CompetencyRemarks", "LastUpdated"], {
-        StudentID: studentId, CompetencyName: c.competency, CompetencyRating: c.rating, CompetencyRemarks: c.remarks, LastUpdated: nowStr
+        StudentID: studentId, CompetencyName: c.competency, CompetencyRating: c.rating, CompetencyRemarks_Credits_Description: c.remarks, LastUpdated: nowStr
       });
     }
   }
