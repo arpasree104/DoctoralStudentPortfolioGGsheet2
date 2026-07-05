@@ -52,12 +52,13 @@ export interface Activity {
   Feedback?: string;
 }
 
-export type OptionType = 'ADVISOR' | 'CO_ADVISOR' | 'CERT_CATEGORY' | 'DEGREE' | 'COURSE' | 'ProgressActivity';
+export type OptionType = 'ADVISOR' | 'CO_ADVISOR' | 'CERT_CATEGORY' | 'DEGREE' | 'COURSE' | 'COURSE_SET' | 'SEMESTER' | 'ProgressActivity' | string;
 
 export interface ConfigOption {
   id: string;
   OptionType: OptionType;
   OptionValue: string;
+  OptionDescription?: string;
 }
 
 export interface ActivityLog {
