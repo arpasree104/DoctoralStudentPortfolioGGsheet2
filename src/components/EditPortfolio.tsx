@@ -742,7 +742,7 @@ export default function EditPortfolio({
               <div className="border-b border-gray-200 pb-2">
                 <h4 className="text-sm font-bold text-gray-800 flex items-center gap-1.5">
                   <Calendar size={16} className="text-tu-red" />
-                  <span>ข้อ 2.2 Doctoral Milestones Timeline (กรอบเวลาความก้าวหน้าตามเกณฑ์)</span>
+                  <span>2.2 Doctoral Milestones Timeline (กรอบเวลาความก้าวหน้าตามเกณฑ์)</span>
                 </h4>
                 <p className="text-[10px] text-gray-400">กรุณาระบุสถานะ แผนการดำเนินการ และวันที่จริงของเกณฑ์โครงสร้างหลักสูตรพยาบาลศาสตรดุษฎีบัณฑิต</p>
               </div>
@@ -830,7 +830,7 @@ export default function EditPortfolio({
               <div className="border-b border-gray-200 pb-2">
                 <h4 className="text-sm font-bold text-gray-800 flex items-center gap-1.5">
                   <Compass size={16} className="text-tu-red" />
-                  <span>ข้อ 2.3 Personal Learning and Development Plan (แผนพัฒนาศักยภาพส่วนบุคคล)</span>
+                  <span>2.3 Personal Learning and Development Plan (แผนพัฒนาศักยภาพส่วนบุคคล)</span>
                 </h4>
                 <p className="text-[10px] text-gray-400">กรุณาระบุเป้าหมายการพัฒนาสมรรถนะการวิจัยและความเป็นนักวิชาการส่วนบุคคล ตลอดแผนการศึกษา</p>
               </div>
