@@ -191,9 +191,7 @@ export default function AdvisorPanel({
                     : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
               >
-                <Users size={14} />
-                Student Demographics
-              </button>
+                <Users size={14} /> View Full Profile </button>
               <button
                 onClick={() => setActiveTab('portfolio')}
                 className={`flex items-center gap-2 px-6 py-2.5 border-b-2 font-medium text-xs transition-all duration-200 cursor-pointer ${
@@ -202,9 +200,7 @@ export default function AdvisorPanel({
                     : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
               >
-                <FileText size={14} />
-                Full Portfolio (16 Sections)
-              </button>
+                <FileText size={14} /> Dissertation Progress Record </button>
             </div>
 
             <AnimatePresence mode="wait">
@@ -514,6 +510,7 @@ export default function AdvisorPanel({
                 <div className="space-y-4 bg-white p-2 rounded-2xl">
                   <EditPortfolio
                     currentUser={activeStudent}
+                    initialSection={5}
                     portfolioData={selectedStudentPortfolio}
                     certificates={certificates}
                     configOptions={[]}
