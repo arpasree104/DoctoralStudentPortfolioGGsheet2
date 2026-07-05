@@ -942,14 +942,21 @@ export function resolvePhotoUrl(url: string | null | undefined, defaultUrl: stri
 
 export function formatDisplayDate(dateString?: string): string {
   if (!dateString) return '';
-  const date = new Date(dateString);
+  if (dateString.match(/^\d{1,2}\s[a-zA-Z]+\s\d{4}$/)) {
+    return dateString;
+  }
+  let parsedString = dateString;
+  if (dateString.includes('T')) {
+    parsedString = dateString.split('T')[0];
+  }
+  const date = new Date(parsedString);
   if (isNaN(date.getTime())) return dateString;
-  return new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'Asia/Bangkok'
-  }).format(date);
+  
+  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+  if (parsedString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    options.timeZone = 'UTC';
+  }
+  return new Intl.DateTimeFormat('en-GB', options).format(date);
 }
 
 export function getLogs(): ActivityLog[] {
