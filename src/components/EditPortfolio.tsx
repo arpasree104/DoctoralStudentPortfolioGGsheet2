@@ -69,6 +69,33 @@ export default function EditPortfolio({
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  const standardCourses = React.useMemo(() => configOptions
+    .filter(c => c.OptionType.trim() === 'COURSE')
+    .map(c => {
+      const parts = c.OptionValue.split('|');
+      if (parts.length >= 3) {
+        return { code: parts[0].trim(), title: parts[1].trim(), credits: parts[2].trim() };
+      }
+      const colonParts = c.OptionValue.split(': ');
+      const code = colonParts[0] || '';
+      const title = colonParts.slice(1).join(': ') || '';
+      return { code, title, credits: '3' };
+    }), [configOptions]);
+
+  const courseSets = React.useMemo(() => configOptions
+    .filter(c => c.OptionType.trim() === 'COURSE_SET')
+    .map(c => {
+      const parts = c.OptionValue.split('|');
+      if (parts.length >= 2) {
+        return { name: parts[0].trim(), courses: parts[1].split(',').map(s => s.trim()) };
+      }
+      return { name: c.OptionValue, courses: [] };
+    }), [configOptions]);
+
+  const semesters = React.useMemo(() => configOptions
+    .filter(c => c.OptionType.trim() === 'SEMESTER')
+    .map(c => c.OptionValue.trim()), [configOptions]);
+
   React.useEffect(() => {
     setFormData({ ...portfolioData });
   }, [portfolioData]);
@@ -520,13 +547,47 @@ export default function EditPortfolio({
                   
                   <div className="flex items-center gap-2">
                     <label className="text-[10px] font-bold text-gray-500">รูปแบบแผนการศึกษา:</label>
-                    <input
-                      type="text"
-                      value={formData.programOfStudyName || 'ชุด 1'}
-                      onChange={e => setFormData({ ...formData, programOfStudyName: e.target.value })}
-                      placeholder="e.g., ชุด 1 หรือ แผน 1.1"
-                      className="px-3 py-1 bg-white border border-gray-250 rounded-lg text-xs font-bold font-mono focus:outline-tu-red w-32"
-                    />
+                    <select
+                      value={formData.programOfStudyName || ''}
+                      onChange={e => {
+                        const setName = e.target.value;
+                        setFormData({ ...formData, programOfStudyName: setName });
+                        
+                        const selectedSet = courseSets.find(s => s.name === setName);
+                        if (selectedSet) {
+                           const existingCodes = (formData.programCourses || []).map(c => c.code);
+                           const newCourses = selectedSet.courses
+                             .filter(code => !existingCodes.includes(code))
+                             .map(code => {
+                               const stdCourse = standardCourses.find(c => c.code === code);
+                               return {
+                                 semester: '',
+                                 code: code,
+                                 title: stdCourse ? stdCourse.title : '',
+                                 credits: stdCourse ? stdCourse.credits : '',
+                                 status: 'Not Started' as const
+                               };
+                             });
+                           
+                           if (newCourses.length > 0) {
+                             setFormData(prev => ({
+                               ...prev,
+                               programOfStudyName: setName,
+                               programCourses: [...(prev.programCourses || []), ...newCourses]
+                             }));
+                           }
+                        }
+                      }}
+                      className="px-3 py-1 bg-white border border-gray-250 rounded-lg text-xs font-bold focus:outline-tu-red min-w-[150px]"
+                    >
+                      <option value="">- เลือกชุดวิชา -</option>
+                      {courseSets.map(s => (
+                        <option key={s.name} value={s.name}>{s.name}</option>
+                      ))}
+                      {!courseSets.some(s => s.name === formData.programOfStudyName) && formData.programOfStudyName && (
+                        <option value={formData.programOfStudyName}>{formData.programOfStudyName}</option>
+                      )}
+                    </select>
                   </div>
                 </div>
 
@@ -546,46 +607,71 @@ export default function EditPortfolio({
 
                       <div className="sm:col-span-2">
                         <label className="text-[9px] font-bold text-gray-400 block mb-0.5">Semester/Year</label>
-                        <input
-                          type="text"
+                        <select
                           value={course.semester}
-                          placeholder="e.g., 1/2025"
                           onChange={e => {
                             const updated = [...(formData.programCourses || [])];
                             updated[idx].semester = e.target.value;
                             setFormData({ ...formData, programCourses: updated });
                           }}
-                          className="w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded text-xs font-semibold"
-                        />
+                          className="w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded text-xs font-semibold focus:outline-tu-red"
+                        >
+                          <option value="">- ระบุ -</option>
+                          {semesters.map(sem => (
+                            <option key={sem} value={sem}>{sem}</option>
+                          ))}
+                          {!semesters.includes(course.semester) && course.semester && (
+                            <option value={course.semester}>{course.semester}</option>
+                          )}
+                        </select>
                       </div>
 
-                      <div className="sm:col-span-2">
+                      <div className="sm:col-span-3">
                         <label className="text-[9px] font-bold text-gray-400 block mb-0.5">Course Code</label>
-                        <input
-                          type="text"
+                        <select
                           value={course.code}
-                          placeholder="e.g., NS802"
                           onChange={e => {
                             const updated = [...(formData.programCourses || [])];
-                            updated[idx].code = e.target.value;
+                            const selectedCode = e.target.value;
+                            const stdCourse = standardCourses.find(c => c.code === selectedCode);
+                            updated[idx].code = selectedCode;
+                            if (stdCourse) {
+                              updated[idx].title = stdCourse.title;
+                              updated[idx].credits = stdCourse.credits;
+                            } else if (!selectedCode) {
+                              updated[idx].title = '';
+                              updated[idx].credits = '';
+                            }
                             setFormData({ ...formData, programCourses: updated });
                           }}
-                          className="w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded text-xs font-mono font-bold"
-                        />
+                          className="w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded text-xs font-mono font-bold focus:outline-tu-red"
+                        >
+                          <option value="">- เลือกรหัสวิชา -</option>
+                          {standardCourses.map(c => {
+                             const isAlreadyAdded = (formData.programCourses || []).some((pc, i) => i !== idx && pc.code === c.code);
+                             return (
+                               <option key={c.code} value={c.code} disabled={isAlreadyAdded}>
+                                 {c.code}
+                               </option>
+                             );
+                          })}
+                          {!standardCourses.some(c => c.code === course.code) && course.code && (
+                            <option value={course.code}>{course.code}</option>
+                          )}
+                        </select>
                       </div>
 
-                      <div className="sm:col-span-5">
+                      <div className="sm:col-span-4">
                         <label className="text-[9px] font-bold text-gray-400 block mb-0.5">Course Title (ชื่อวิชาภาษาอังกฤษ)</label>
                         <input
                           type="text"
                           value={course.title}
-                          placeholder="e.g., Advanced Gerontology"
                           onChange={e => {
                             const updated = [...(formData.programCourses || [])];
                             updated[idx].title = e.target.value;
                             setFormData({ ...formData, programCourses: updated });
                           }}
-                          className="w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded text-xs"
+                          className="w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded text-xs focus:outline-tu-red"
                         />
                       </div>
 
@@ -594,13 +680,12 @@ export default function EditPortfolio({
                         <input
                           type="text"
                           value={course.credits}
-                          placeholder="3"
                           onChange={e => {
                             const updated = [...(formData.programCourses || [])];
                             updated[idx].credits = e.target.value;
                             setFormData({ ...formData, programCourses: updated });
                           }}
-                          className="w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded text-xs font-semibold text-center font-mono"
+                          className="w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded text-xs font-semibold text-center font-mono focus:outline-tu-red"
                         />
                       </div>
 
