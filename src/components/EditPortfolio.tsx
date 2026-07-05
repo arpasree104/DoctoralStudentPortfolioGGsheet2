@@ -24,6 +24,38 @@ interface EditPortfolioProps {
   initialSection?: number | null;
 }
 
+
+const ReadOnlyTable = ({ data, columns }: { data: any[], columns: { header: string, key: string, render?: (val: any) => React.ReactNode }[] }) => {
+  if (!data || data.length === 0) return <div className="text-xs text-gray-500 italic">No data provided.</div>;
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left border-collapse border border-gray-200 rounded-lg overflow-hidden">
+        <thead className="bg-gray-100 text-gray-600 text-xs border-b border-gray-200">
+          <tr>
+            {columns.map((col, i) => <th key={i} className="py-2.5 px-4 font-bold">{col.header}</th>)}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100 bg-white">
+          {data.map((row, i) => (
+            <tr key={i} className="text-xs text-gray-800">
+              {columns.map((col, j) => (
+                <td key={j} className="py-2.5 px-4">{col.render ? col.render(row) : (row[col.key] || '-')}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+const ReadOnlyText = ({ label, text }: { label?: string, text: string }) => (
+  <div className="mb-4">
+    {label && <h4 className="text-xs font-bold text-gray-500 mb-1">{label}</h4>}
+    <div className="p-3 bg-gray-50 border border-gray-100 rounded-lg text-sm text-gray-800 whitespace-pre-wrap">{text || '-'}</div>
+  </div>
+);
+
 export default function EditPortfolio({
   currentUser,
   portfolioData,
@@ -311,7 +343,15 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {formData.academicBackground.map((item, idx) => (
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.academicBackground || []} columns={[
+        { header: 'Degree Name', key: 'degree' },
+        { header: 'Field of Study', key: 'field' },
+        { header: 'Institution', key: 'institution' },
+        { header: 'Graduation Year', key: 'year' }
+      ]} />
+    ) : (
+      formData.academicBackground.map((item, idx) => (
                 <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <button
                     onClick={() => removeAcademicBackground(idx)}
@@ -377,7 +417,8 @@ export default function EditPortfolio({
                     />
                   </div>
                 </div>
-              ))}
+              ))
+    )}
             </div>
 
             {/* Professional Background List */}
@@ -393,7 +434,14 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {formData.professionalBackground.map((item, idx) => (
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.professionalBackground || []} columns={[
+        { header: 'Position', key: 'position' },
+        { header: 'Institution / Organization', key: 'institution' },
+        { header: 'Years', key: 'years' }
+      ]} />
+    ) : (
+      formData.professionalBackground.map((item, idx) => (
                 <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <button
                     onClick={() => removeProfessionalBackground(idx)}
@@ -445,7 +493,8 @@ export default function EditPortfolio({
                     />
                   </div>
                 </div>
-              ))}
+              ))
+    )}
             </div>
           </div>
         )}
@@ -607,7 +656,14 @@ export default function EditPortfolio({
               </div>
 
               <div className="space-y-3">
-                {formData.milestones.map((milestone, idx) => (
+                {isReadOnly ? (
+      <ReadOnlyTable data={formData.milestones || []} columns={[
+        { header: 'Milestone', key: 'name' },
+        { header: 'Target Date', key: 'date' },
+        { header: 'Status', key: 'status', render: (val) => <span className={'px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ' + (val.status === 'Completed' ? 'bg-green-100 text-green-700' : val.status === 'In Progress' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700')}>{val.status}</span> }
+      ]} />
+    ) : (
+      formData.milestones.map((milestone, idx) => (
                   <div key={milestone.key} className="p-3.5 bg-gray-50 rounded-xl border border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <span className="text-[10px] font-mono font-bold text-tu-red block">MILESTONE {idx + 1}</span>
@@ -665,7 +721,8 @@ export default function EditPortfolio({
                       </div>
                     </div>
                   </div>
-                ))}
+                ))
+    )}
               </div>
             </div>
 
@@ -680,7 +737,16 @@ export default function EditPortfolio({
               </div>
 
               <div className="space-y-4">
-                {(formData.learningPlans || []).map((plan, idx) => (
+                {isReadOnly ? (
+      <ReadOnlyTable data={formData.learningPlans || []} columns={[
+        { header: 'Competency Area', key: 'competency' },
+        { header: 'Description', key: 'description' },
+        { header: 'Activities', key: 'activities' },
+        { header: 'Target Date', key: 'targetDate' },
+        { header: 'Status', key: 'status', render: (val) => <span className={'px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ' + (val.status === 'Completed' ? 'bg-green-100 text-green-700' : val.status === 'In Progress' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700')}>{val.status}</span> }
+      ]} />
+    ) : (
+      (formData.learningPlans || []).map((plan, idx) => (
                   <div key={idx} className="p-4 bg-white border border-gray-150 rounded-xl relative space-y-3">
                     <button
                       onClick={() => {
@@ -772,7 +838,8 @@ export default function EditPortfolio({
                       </div>
                     </div>
                   </div>
-                ))}
+                ))
+    )}
 
                 <button
                   onClick={() => {
@@ -1058,7 +1125,16 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {formData.completedCourses.map((course, idx) => {
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.completedCourses || []} columns={[
+        { header: 'Semester / Year', key: 'semester' },
+        { header: 'Course Code', key: 'code' },
+        { header: 'Course Title', key: 'title' },
+        { header: 'Grade', key: 'grade' },
+        { header: 'Credits', key: 'credits' }
+      ]} />
+    ) : (
+      formData.completedCourses.map((course, idx) => {
                 const standardCourses = configOptions
                   .filter(c => c.OptionType === 'COURSE')
                   .map(c => {
@@ -1212,7 +1288,8 @@ export default function EditPortfolio({
                     </div>
                   </div>
                 );
-              })}
+              })
+    )}
             </div>
 
             {/* 4.2 Key Learning from Coursework */}
@@ -1228,7 +1305,13 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {(formData.keyLearnings || []).map((kl, idx) => (
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.keyLearnings || []} columns={[
+        { header: 'Subject / Topic', key: 'subject' },
+        { header: 'Key Learning Points', key: 'learning' }
+      ]} />
+    ) : (
+      (formData.keyLearnings || []).map((kl, idx) => (
                 <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <button
                     onClick={() => {
@@ -1285,7 +1368,8 @@ export default function EditPortfolio({
                     />
                   </div>
                 </div>
-              ))}
+              ))
+    )}
             </div>
 
             {/* 4.3 Workshops, Training, and Short Courses */}
@@ -1301,7 +1385,14 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {(formData.workshops || []).map((ws, idx) => (
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.workshops || []} columns={[
+        { header: 'Date', key: 'date' },
+        { header: 'Workshop / Training Topic', key: 'topic' },
+        { header: 'Organizer', key: 'organizer' }
+      ]} />
+    ) : (
+      (formData.workshops || []).map((ws, idx) => (
                 <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-5 gap-4">
                   <button
                     onClick={() => {
@@ -1371,7 +1462,8 @@ export default function EditPortfolio({
                     />
                   </div>
                 </div>
-              ))}
+              ))
+    )}
             </div>
 
             {/* 4.4 Certifications - Pull from Certificates tab/sheet */}
@@ -1602,7 +1694,15 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {(formData.dissertationProgress || []).map((prog, idx) => {
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.dissertationProgress || []} columns={[
+        { header: 'Activity / Milestone', key: 'activity' },
+        { header: 'Date', key: 'date' },
+        { header: 'Progress', key: 'progress' },
+        { header: 'Obstacles / Solutions', key: 'obstacles' }
+      ]} />
+    ) : (
+      (formData.dissertationProgress || []).map((prog, idx) => {
                 let currentFiles = [];
                 if (Array.isArray(prog.evidence)) {
                   currentFiles = prog.evidence.map(f => typeof f === 'string' ? { name: 'Attachment', url: f } : f);
@@ -1711,7 +1811,8 @@ export default function EditPortfolio({
                   </div>
                 </div>
                 );
-              })}
+              })
+    )}
             </div>
 
             {/* 5.4 Doctoral Advisory Committee Meetings */}
@@ -1727,7 +1828,15 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {formData.advisorMeetings.map((meet, idx) => (
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.advisorMeetings || []} columns={[
+        { header: 'Meeting Date', key: 'date' },
+        { header: 'Topic(s) Discussed', key: 'topic' },
+        { header: 'Summary of Advice / Outcomes', key: 'summary' },
+        { header: 'Next Steps', key: 'nextSteps' }
+      ]} />
+    ) : (
+      formData.advisorMeetings.map((meet, idx) => (
                 <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <button
                     onClick={() => {
@@ -1794,7 +1903,8 @@ export default function EditPortfolio({
                     />
                   </div>
                 </div>
-              ))}
+              ))
+    )}
             </div>
 
             {/* 5.5 Ethics and Research Governance */}
@@ -1926,7 +2036,15 @@ export default function EditPortfolio({
               </button>
             </div>
 
-            {formData.researchExperience.map((item, idx) => (
+            {isReadOnly ? (
+      <ReadOnlyTable data={formData.researchExperience || []} columns={[
+        { header: 'Research Title', key: 'title' },
+        { header: 'Role', key: 'role' },
+        { header: 'Year', key: 'year' },
+        { header: 'Funding', key: 'funding' }
+      ]} />
+    ) : (
+      formData.researchExperience.map((item, idx) => (
               <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-5 gap-4">
                 <button
                   onClick={() => {
@@ -1993,7 +2111,8 @@ export default function EditPortfolio({
                   />
                 </div>
               </div>
-            ))}
+            ))
+    )}
 
             <div className="space-y-2 border-t border-gray-100 pt-5">
               <label className="text-xs font-bold text-gray-700 block">6.2 Reflective Insight on Research Competence</label>
@@ -2026,7 +2145,15 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {(formData.conferencePresentations || []).map((conf, idx) => (
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.conferencePresentations || []} columns={[
+        { header: 'Date', key: 'date' },
+        { header: 'Conference Name', key: 'conference' },
+        { header: 'Title of Presentation', key: 'title' },
+        { header: 'Level', key: 'level' }
+      ]} />
+    ) : (
+      (formData.conferencePresentations || []).map((conf, idx) => (
                 <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-5 gap-4">
                   <button
                     onClick={() => {
@@ -2108,7 +2235,8 @@ export default function EditPortfolio({
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+    )}
             </div>
 
             {/* 7.2 Peer-Reviewed Journal Publications */}
@@ -2124,7 +2252,17 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {(formData.publications || []).map((pub, idx) => (
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.publications || []} columns={[
+        { header: 'Publication Type', key: 'type' },
+        { header: 'Title', key: 'title' },
+        { header: 'Authors', key: 'authors' },
+        { header: 'Journal / Publisher', key: 'journal' },
+        { header: 'Year', key: 'year' },
+        { header: 'Quartile / Impact', key: 'quartile' }
+      ]} />
+    ) : (
+      (formData.publications || []).map((pub, idx) => (
                 <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <button
                     onClick={() => {
@@ -2179,7 +2317,8 @@ export default function EditPortfolio({
                     />
                   </div>
                 </div>
-              ))}
+              ))
+    )}
             </div>
 
             {/* 7.3 Manuscripts in Preparation */}
@@ -2195,7 +2334,15 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {(formData.manuscripts || []).map((msc, idx) => (
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.manuscripts || []} columns={[
+        { header: 'Date', key: 'date' },
+        { header: 'Title', key: 'title' },
+        { header: 'Target Journal', key: 'journal' },
+        { header: 'Status', key: 'status' }
+      ]} />
+    ) : (
+      (formData.manuscripts || []).map((msc, idx) => (
                 <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <button
                     onClick={() => {
@@ -2264,7 +2411,8 @@ export default function EditPortfolio({
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+    )}
             </div>
 
             {/* 7.4 Research Grants and Funding */}
@@ -2280,7 +2428,15 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {(formData.grants || []).map((gr, idx) => (
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.grants || []} columns={[
+        { header: 'Year', key: 'year' },
+        { header: 'Grant Name / Source', key: 'name' },
+        { header: 'Amount', key: 'amount' },
+        { header: 'Role', key: 'role' }
+      ]} />
+    ) : (
+      (formData.grants || []).map((gr, idx) => (
                 <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <button
                     onClick={() => {
@@ -2359,7 +2515,8 @@ export default function EditPortfolio({
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+    )}
             </div>
 
             {/* 7.5 Awards and Recognition */}
@@ -2375,7 +2532,14 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {(formData.awards || []).map((aw, idx) => (
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.awards || []} columns={[
+        { header: 'Award / Scholarship', key: 'award' },
+        { header: 'Organization', key: 'organization' },
+        { header: 'Year', key: 'year' }
+      ]} />
+    ) : (
+      (formData.awards || []).map((aw, idx) => (
                 <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <button
                     onClick={() => {
@@ -2442,7 +2606,8 @@ export default function EditPortfolio({
                     />
                   </div>
                 </div>
-              ))}
+              ))
+    )}
             </div>
           </div>
         )}
@@ -2455,7 +2620,14 @@ export default function EditPortfolio({
             <h3 className="text-sm font-bold text-gray-700 mb-4">12.1 Self-Assessment of Core Doctoral Competencies</h3>
             
             <div className="space-y-3">
-              {formData.competencySelfAssessment.map((comp, idx) => (
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.competencySelfAssessment || []} columns={[
+        { header: 'Competency Area', key: 'area' },
+        { header: 'Score (1-5)', key: 'score' },
+        { header: 'Evidence / Example', key: 'evidence' }
+      ]} />
+    ) : (
+      formData.competencySelfAssessment.map((comp, idx) => (
                 <div key={idx} className="p-3.5 bg-gray-50 rounded-xl border border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-semibold text-gray-800">{comp.competency}</h4>
@@ -2490,7 +2662,8 @@ export default function EditPortfolio({
                     />
                   </div>
                 </div>
-              ))}
+              ))
+    )}
             </div>
           </div>
         )}
@@ -2513,7 +2686,16 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {(formData.teachingExperiences || []).map((tch, idx) => (
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.teachingExperiences || []} columns={[
+        { header: 'Course Name', key: 'course' },
+        { header: 'Program Level', key: 'level' },
+        { header: 'Role', key: 'role' },
+        { header: 'Year / Semester', key: 'year' },
+        { header: 'Hours', key: 'hours' }
+      ]} />
+    ) : (
+      (formData.teachingExperiences || []).map((tch, idx) => (
                 <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-5 gap-4">
                   <button
                     onClick={() => {
@@ -2597,7 +2779,8 @@ export default function EditPortfolio({
                     />
                   </div>
                 </div>
-              ))}
+              ))
+    )}
             </div>
 
             {/* 8.2 Student Supervision or Mentoring */}
@@ -2613,7 +2796,15 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {(formData.supervisions || []).map((sup, idx) => (
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.supervisions || []} columns={[
+        { header: 'Student Name / Level', key: 'student' },
+        { header: 'Topic / Thesis Title', key: 'topic' },
+        { header: 'Role', key: 'role' },
+        { header: 'Year', key: 'year' }
+      ]} />
+    ) : (
+      (formData.supervisions || []).map((sup, idx) => (
                 <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <button
                     onClick={() => {
@@ -2682,7 +2873,8 @@ export default function EditPortfolio({
                     />
                   </div>
                 </div>
-              ))}
+              ))
+    )}
             </div>
 
             {/* 8.3 Academic and Professional Service */}
@@ -2698,7 +2890,15 @@ export default function EditPortfolio({
                 </button>
               </div>
 
-              {(formData.academicServices || []).map((srv, idx) => (
+              {isReadOnly ? (
+      <ReadOnlyTable data={formData.academicServices || []} columns={[
+        { header: 'Activity / Event', key: 'activity' },
+        { header: 'Role', key: 'role' },
+        { header: 'Date', key: 'date' },
+        { header: 'Organization', key: 'organization' }
+      ]} />
+    ) : (
+      (formData.academicServices || []).map((srv, idx) => (
                 <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <button
                     onClick={() => {
@@ -2764,7 +2964,8 @@ export default function EditPortfolio({
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+    )}
             </div>
           </div>
         )}
@@ -2785,7 +2986,15 @@ export default function EditPortfolio({
               </button>
             </div>
 
-            {(formData.leaderships || []).map((ldr, idx) => (
+            {isReadOnly ? (
+      <ReadOnlyTable data={formData.leaderships || []} columns={[
+        { header: 'Role / Position', key: 'role' },
+        { header: 'Organization / Committee', key: 'organization' },
+        { header: 'Year(s)', key: 'year' },
+        { header: 'Key Contributions', key: 'contribution' }
+      ]} />
+    ) : (
+      (formData.leaderships || []).map((ldr, idx) => (
               <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-100 relative grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <button
                   onClick={() => {
@@ -2852,7 +3061,8 @@ export default function EditPortfolio({
                   />
                 </div>
               </div>
-            ))}
+            ))
+    )}
           </div>
         )}
 

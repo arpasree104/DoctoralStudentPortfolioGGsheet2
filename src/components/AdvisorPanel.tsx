@@ -33,7 +33,7 @@ export default function AdvisorPanel({
   const [selectedStudent, setSelectedStudent] = useState<User | null>(null);
   const [selectedStudentPortfolio, setSelectedStudentPortfolio] = useState<StudentPortfolioData | null>(null);
   const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(false);
-  const [activeTab, setActiveTab] = useState<'certs' | 'activities' | 'profile' | 'portfolio'>('certs');
+  const [activeTab, setActiveTab] = useState<'certs' | 'activities' | 'profile' | 'portfolio'>('profile');
   
   // Feedback states
   const [feedbackText, setFeedbackText] = useState('');
@@ -176,6 +176,24 @@ export default function AdvisorPanel({
               <>
             <div className="flex border-b border-gray-200 no-print">
               <button
+                onClick={() => setActiveTab('profile')}
+                className={`flex items-center gap-2 px-6 py-2.5 border-b-2 font-medium text-xs transition-all duration-200 cursor-pointer ${
+                  activeTab === 'profile'
+                    ? 'border-tu-red text-tu-red font-bold'
+                    : 'border-transparent text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <Users size={14} /> View Full Profile </button>
+              <button
+                onClick={() => setActiveTab('portfolio')}
+                className={`flex items-center gap-2 px-6 py-2.5 border-b-2 font-medium text-xs transition-all duration-200 cursor-pointer ${
+                  activeTab === 'portfolio'
+                    ? 'border-tu-red text-tu-red font-bold'
+                    : 'border-transparent text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <FileText size={14} /> Dissertation Progress Record </button>
+              <button
                 onClick={() => setActiveTab('certs')}
                 className={`flex items-center gap-2 px-6 py-2.5 border-b-2 font-medium text-xs transition-all duration-200 cursor-pointer ${
                   activeTab === 'certs'
@@ -197,24 +215,6 @@ export default function AdvisorPanel({
                 <Clock size={14} />
                 Review Activities ({activities.filter(a => a.StudentID === activeStudent.StudentID && a.Status === 'PENDING').length} Pending)
               </button>
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`flex items-center gap-2 px-6 py-2.5 border-b-2 font-medium text-xs transition-all duration-200 cursor-pointer ${
-                  activeTab === 'profile'
-                    ? 'border-tu-red text-tu-red font-bold'
-                    : 'border-transparent text-gray-500 hover:text-gray-800'
-                }`}
-              >
-                <Users size={14} /> View Full Profile </button>
-              <button
-                onClick={() => setActiveTab('portfolio')}
-                className={`flex items-center gap-2 px-6 py-2.5 border-b-2 font-medium text-xs transition-all duration-200 cursor-pointer ${
-                  activeTab === 'portfolio'
-                    ? 'border-tu-red text-tu-red font-bold'
-                    : 'border-transparent text-gray-500 hover:text-gray-800'
-                }`}
-              >
-                <FileText size={14} /> Dissertation Progress Record </button>
             </div>
 
             <AnimatePresence mode="wait">
