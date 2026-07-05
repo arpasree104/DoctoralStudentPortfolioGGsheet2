@@ -11,6 +11,7 @@ import { resolvePhotoUrl, resolveFileUrl, formatDisplayDate, getStudentPortfolio
 import StudentInformation from './StudentInformation';
 import StudentProgressDashboard from './StudentProgressDashboard';
 import EditPortfolio from './EditPortfolio';
+import AdvisorDissertationView from './AdvisorDissertationView';
 
 interface AdvisorPanelProps {
   currentUser: User;
@@ -31,6 +32,7 @@ export default function AdvisorPanel({
 }: AdvisorPanelProps) {
   const [selectedStudent, setSelectedStudent] = useState<User | null>(null);
   const [selectedStudentPortfolio, setSelectedStudentPortfolio] = useState<StudentPortfolioData | null>(null);
+  const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(false);
   const [activeTab, setActiveTab] = useState<'certs' | 'activities' | 'profile' | 'portfolio'>('certs');
   
   // Feedback states
@@ -103,7 +105,11 @@ export default function AdvisorPanel({
                 onClick={() => {
                   setSelectedStudent(stud);
                   setSelectedStudentPortfolio(null);
-                  getStudentPortfolio(stud.StudentID || '').then(port => setSelectedStudentPortfolio(port));
+                  setIsLoadingPortfolio(true);
+                  getStudentPortfolio(stud.StudentID || '').then(port => {
+                    setSelectedStudentPortfolio(port);
+                    setIsLoadingPortfolio(false);
+                  });
                   setFeedbackText('');
                 }}
                 className={`w-full text-left p-3 rounded-xl transition duration-200 flex items-center gap-3 border cursor-pointer ${
@@ -160,6 +166,14 @@ export default function AdvisorPanel({
             </div>
 
             {/* Sub-tab selection */}
+            {isLoadingPortfolio && (
+              <div className="flex items-center justify-center p-6 bg-white rounded-2xl border border-gray-100 shadow-xs mb-6">
+                <Loader2 className="animate-spin text-tu-red mr-2" size={24} />
+                <span className="text-sm font-semibold text-gray-600">Loading student data...</span>
+              </div>
+            )}
+            {!isLoadingPortfolio && (
+              <>
             <div className="flex border-b border-gray-200 no-print">
               <button
                 onClick={() => setActiveTab('certs')}
@@ -507,19 +521,14 @@ export default function AdvisorPanel({
                 </div>
               )}
               {activeTab === 'portfolio' && selectedStudentPortfolio && (
-                <div className="space-y-4 bg-white p-2 rounded-2xl">
-                  <EditPortfolio
-                    currentUser={activeStudent}
-                    initialSection={5}
-                    portfolioData={selectedStudentPortfolio}
-                    certificates={certificates}
-                    configOptions={[]}
-                    onSavePortfolio={async () => {}}
-                    isReadOnly={true}
-                  />
-                </div>
+                <AdvisorDissertationView
+                  student={activeStudent}
+                  portfolio={selectedStudentPortfolio}
+                />
               )}
             </AnimatePresence>
+            </>
+          )}
           </>
         ) : myStudents.length > 0 ? (
           <StudentProgressDashboard students={myStudents} onSelectStudent={(stud) => {
